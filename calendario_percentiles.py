@@ -30,10 +30,11 @@ def color_por_percentil(p):
     return (0.5, 0.5, 0.5)
 
 
-def dibujar_calendario(percentiles_dia, nombre_estacion, idema):
+def dibujar_calendario(percentiles_dia, nombre_estacion, idema, campo="tmax"):
     meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun",
              "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
     dias_en_mes = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    etiqueta_campo = "máxima" if campo == "tmax" else "mínima"
 
     fig, ax = plt.subplots(figsize=(14, 7))
     lado = 1.0
@@ -67,7 +68,7 @@ def dibujar_calendario(percentiles_dia, nombre_estacion, idema):
     ax.set_ylim(-1, 12 * (lado + hueco))
     ax.set_aspect("equal")
     ax.axis("off")
-    ax.set_title(f"Percentil de temperatura máxima diaria respecto a climatología histórica\n"
+    ax.set_title(f"Percentil de temperatura {etiqueta_campo} diaria respecto a climatología histórica\n"
                  f"{nombre_estacion} ({idema}) — ventana ±{VENTANA_DIAS} días",
                  fontsize=12)
 
@@ -77,42 +78,44 @@ def dibujar_calendario(percentiles_dia, nombre_estacion, idema):
     cax.imshow(colores.reshape(1, -1, 3), aspect="auto", extent=[0, 100, 0, 1])
     cax.set_yticks([])
     cax.set_xticks([0, 25, 50, 75, 100])
-    cax.set_xlabel("Percentil (frío para la época → cálido para la época)", fontsize=8)
+    cax.set_xlabel(f"Percentil (frío para la época → cálido para la época)", fontsize=8)
 
     plt.tight_layout()
-    
+    import os
     os.makedirs("graficas", exist_ok=True)
-    nombre_archivo = f"graficas/calendario_percentiles_{idema}.png"
+    nombre_archivo = f"graficas/calendario_percentiles_{campo}_{idema}.png"
     plt.savefig(nombre_archivo, dpi=150, bbox_inches="tight")
     print(f"Guardado como {nombre_archivo}")
     plt.close(fig)
 
 
-def generar_grafico(idema, nombre_estacion):
-    historico_tmax = cargar_cache(ruta_cache_historico(idema))
-    actual_tmax = cargar_cache(ruta_cache_anio_actual(idema))
+def generar_grafico(idema, nombre_estacion, campo="tmax"):
+    historico = cargar_cache(ruta_cache_historico(idema))
+    actual = cargar_cache(ruta_cache_anio_actual(idema))
 
-    muestras_por_dia = construir_muestras_por_dia(historico_tmax)
+    muestras_por_dia = construir_muestras_por_dia(historico, campo=campo)
 
     percentiles_dia = {}
-    for f, tmax in actual_tmax.items():
+    for f, fila in actual.items():
+        valor = fila.get(campo)
+        if valor is None:
+            continue
         md = dia_del_anio_normalizado(f)
         distribucion = muestras_por_dia.get(md, [])
-        percentiles_dia[f] = percentil(tmax, distribucion)
+        percentiles_dia[f] = percentil(valor, distribucion)
 
-    dibujar_calendario(percentiles_dia, nombre_estacion, idema)
+    dibujar_calendario(percentiles_dia, nombre_estacion, idema, campo)
 
 
 if __name__ == "__main__":
     with open("estaciones.json", encoding="utf-8") as f:
         estaciones = json.load(f)
 
-    if len(sys.argv) > 1:
-        idemas = [sys.argv[1]]
-    else:
-        idemas = list(estaciones.keys())
+    campo = "tmin" if "--tmin" in sys.argv else "tmax"
+    args_idema = [a for a in sys.argv[1:] if not a.startswith("--")]
+    idemas = args_idema if args_idema else list(estaciones.keys())
 
     for idema in idemas:
         nombre = estaciones[idema]["nombre"]
-        print(f"\n=== Generando calendario de {nombre} ({idema}) ===")
-        generar_grafico(idema, nombre)
+        print(f"\n=== Generando calendario de {nombre} ({idema}), campo={campo} ===")
+        generar_grafico(idema, nombre, campo=campo)
