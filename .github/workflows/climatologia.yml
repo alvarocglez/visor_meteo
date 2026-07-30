@@ -1,0 +1,34 @@
+name: Actualizar climatología
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # cada día a las 6:00 UTC
+  workflow_dispatch:        # te permite ejecutarlo también a mano desde GitHub
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: pip install requests numpy matplotlib
+
+      - name: Ejecutar script
+        env:
+          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+        run: python calendario_percentiles.py
+
+      - name: Guardar cambios en el repositorio
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add cache_historico_2422.csv cache_anio_actual_2422_2026.csv calendario_percentiles_tmax.png
+          git commit -m "Actualización automática de datos" || echo "Sin cambios"
+          git push
