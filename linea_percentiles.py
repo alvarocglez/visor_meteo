@@ -9,6 +9,7 @@ import json
 from datetime import date, timedelta
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import matplotlib.ticker as mticker
 
 from aemet_datos import ruta_cache_historico, ruta_cache_anio_actual, cargar_cache
 from climatologia import construir_muestras_por_dia, dia_del_anio_normalizado, valor_percentil
@@ -52,8 +53,7 @@ def generar_grafico(idema, nombre_estacion, campo="tmax"):
     ax.legend(loc="upper left", fontsize=9)
 
     ax.xaxis.set_major_locator(mdates.MonthLocator())
-    ax.xaxis.set_major_formatter(mdates.FuncFormatter(lambda x, pos: meses_es[mdates.num2date(x).month - 1]))
-    ax.xaxis.set_minor_locator(mdates.WeekdayLocator(byweekday=mdates.MO))
+    ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, pos: meses_es[mdates.num2date(x).month - 1]))    ax.xaxis.set_minor_locator(mdates.WeekdayLocator(byweekday=mdates.MO))
 
     ax.grid(True, which="major", axis="x", linestyle="-", alpha=0.5, color="#888")
     ax.grid(True, which="major", axis="y", linestyle="--", alpha=0.3)
