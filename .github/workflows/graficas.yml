@@ -21,15 +21,18 @@ jobs:
       - name: Generar calendario de percentiles
         run: python calendario_percentiles.py
 
+      - name: Generar gráfico de líneas
+        run: python linea_percentiles.py
+
       - name: Guardar cambios en el repositorio
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add calendario_percentiles_*.png
+          git add calendario_percentiles_*.png linea_percentiles_*.png
           git stash --include-untracked
           git fetch origin main
           git reset --hard origin/main
           git stash pop
-          git add calendario_percentiles_*.png
+          git add calendario_percentiles_*.png linea_percentiles_*.png
           git commit -m "Regenerar gráficas" || echo "Sin cambios"
           git push
