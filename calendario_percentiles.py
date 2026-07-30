@@ -4,6 +4,7 @@ Solo lee datos ya descargados (caché) - no llama a la API de AEMET.
 """
 
 import sys
+import os
 import json
 import numpy as np
 import matplotlib.pyplot as plt
