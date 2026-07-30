@@ -21,8 +21,14 @@ jobs:
       - name: Generar calendario de percentiles
         run: python calendario_percentiles.py
 
+      - name: Generar calendario de percentiles (tmin)
+        run: python calendario_percentiles.py --tmin
+
       - name: Generar gráfico de líneas
         run: python linea_percentiles.py
+
+      - name: Generar gráfico de líneas (tmin)
+        run: python linea_percentiles.py --tmin
 
       - name: Guardar cambios en el repositorio
         run: |
