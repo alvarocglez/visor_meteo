@@ -23,16 +23,16 @@ def distancia_dias_calendario(mes_dia_a, mes_dia_b):
     return min(dist, 366 - dist)
 
 
-def construir_muestras_por_dia(historico_tmax, ventana_dias=VENTANA_DIAS, muestra_minima=MUESTRA_MINIMA):
-    """Agrupa las Tmax históricas por día del año (mes,dia).
+def construir_muestras_por_dia(datos_dict, campo="tmax", ventana_dias=VENTANA_DIAS, muestra_minima=MUESTRA_MINIMA):
+    """Agrupa los valores históricos de `campo` por día del año (mes,dia).
     Empieza con ventana +/- ventana_dias y la amplía si la muestra es escasa."""
-    dias_unicos = sorted({dia_del_anio_normalizado(f) for f in historico_tmax})
-    lista_fechas = list(historico_tmax.items())
+    dias_unicos = sorted({dia_del_anio_normalizado(f) for f in datos_dict})
+    lista_fechas = [(f, fila.get(campo)) for f, fila in datos_dict.items() if fila.get(campo) is not None]
     muestras = {}
     for md in dias_unicos:
         ventana = ventana_dias
         valores = []
-        while ventana <= 60:  # límite de seguridad para no diluir demasiado la climatología
+        while ventana <= 60:
             valores = [
                 v for f, v in lista_fechas
                 if distancia_dias_calendario(md, dia_del_anio_normalizado(f)) <= ventana
