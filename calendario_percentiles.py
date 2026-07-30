@@ -79,7 +79,9 @@ def dibujar_calendario(percentiles_dia, nombre_estacion, idema):
     cax.set_xlabel("Percentil (frío para la época → cálido para la época)", fontsize=8)
 
     plt.tight_layout()
-    nombre_archivo = f"calendario_percentiles_{idema}.png"
+    
+    os.makedirs("graficas", exist_ok=True)
+    nombre_archivo = f"graficas/calendario_percentiles_{idema}.png"
     plt.savefig(nombre_archivo, dpi=150, bbox_inches="tight")
     print(f"Guardado como {nombre_archivo}")
     plt.close(fig)
