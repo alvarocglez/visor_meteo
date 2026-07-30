@@ -8,6 +8,7 @@ import os
 import json
 from datetime import date, timedelta
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
 from aemet_datos import ruta_cache_historico, ruta_cache_anio_actual, cargar_cache
 from climatologia import construir_muestras_por_dia, dia_del_anio_normalizado, valor_percentil
@@ -43,11 +44,20 @@ def generar_grafico(idema, nombre_estacion, campo="tmax"):
     ax.plot(dias, p50, color="#2c5f8a", linewidth=1, linestyle="--", label="Mediana histórica")
     ax.plot(dias, valor_real, color="#c0392b", linewidth=1.8, label=f"T{etiqueta_campo[:3]} real {anio}")
 
+    meses_es = ["Ene", "Feb", "Mar", "Abr", "May", "Jun",
+                "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
+
     ax.set_title(f"Temperatura {etiqueta_campo} diaria vs climatología histórica\n{nombre_estacion} ({idema})")
     ax.set_ylabel("Temperatura (°C)")
     ax.legend(loc="upper left", fontsize=9)
-    ax.grid(True, linestyle="--", alpha=0.4)
-    fig.autofmt_xdate()
+
+    ax.xaxis.set_major_locator(mdates.MonthLocator())
+    ax.xaxis.set_major_formatter(mdates.FuncFormatter(lambda x, pos: meses_es[mdates.num2date(x).month - 1]))
+    ax.xaxis.set_minor_locator(mdates.WeekdayLocator(byweekday=mdates.MO))
+
+    ax.grid(True, which="major", axis="x", linestyle="-", alpha=0.5, color="#888")
+    ax.grid(True, which="major", axis="y", linestyle="--", alpha=0.3)
+    ax.set_xlim(dias[0], dias[-1])
 
     plt.tight_layout()
     import os
