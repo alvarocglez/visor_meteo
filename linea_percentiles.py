@@ -53,7 +53,8 @@ def generar_grafico(idema, nombre_estacion, campo="tmax"):
     ax.legend(loc="upper left", fontsize=9)
 
     ax.xaxis.set_major_locator(mdates.MonthLocator())
-    ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, pos: meses_es[mdates.num2date(x).month - 1]))    ax.xaxis.set_minor_locator(mdates.WeekdayLocator(byweekday=mdates.MO))
+    ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, pos: meses_es[mdates.num2date(x).month - 1]))    
+    ax.xaxis.set_minor_locator(mdates.WeekdayLocator(byweekday=mdates.MO))
 
     ax.grid(True, which="major", axis="x", linestyle="-", alpha=0.5, color="#888")
     ax.grid(True, which="major", axis="y", linestyle="--", alpha=0.3)
