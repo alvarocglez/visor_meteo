@@ -18,6 +18,8 @@ HEADERS = {"api_key": API_KEY}
 
 ANIOS_HISTORICOS = 30  # años de climatología a usar (excluyendo el actual)
 
+CAMPOS_NUMERICOS = ["tmax", "tmin", "tmed", "prec", "velmedia", "racha",
+                    "presMax", "presMin", "hrMedia", "sol"]
 
 def ruta_cache_historico(idema):
     return f"cache_historico_{idema}.csv"
@@ -78,42 +80,57 @@ def pedir_datos(idema, fecha_ini, fecha_fin, intentos=5):
 
     print(f"  Se agotaron los reintentos para {fecha_ini} a {fecha_fin}")
     return []
+    
+
+def _parsear_numero(valor):
+    if valor is None or valor == "":
+        return None
+    try:
+        return float(str(valor).replace(",", "."))
+    except (ValueError, TypeError):
+        return None
 
 
-def parsear_tmax(registros):
-    """Convierte la lista de registros de AEMET en un dict {date: tmax_float}."""
+def parsear_registros(registros):
+    """Convierte la lista de registros de AEMET en un dict {date: {campo: valor}}."""
     salida = {}
     for r in registros:
         fecha_raw = r.get("fecha")
-        tmax_raw = r.get("tmax")
-        if not fecha_raw or not tmax_raw:
+        if not fecha_raw:
             continue
         try:
-            tmax = float(tmax_raw.replace(",", "."))
             f = date.fromisoformat(fecha_raw)
-            salida[f] = tmax
-        except (ValueError, TypeError):
+        except ValueError:
             continue
+        fila = {campo: _parsear_numero(r.get(campo)) for campo in CAMPOS_NUMERICOS}
+        if fila.get("tmax") is None:
+            continue  # sin tmax no nos sirve el registro para climatología
+        salida[f] = fila
     return salida
 
 
-def guardar_cache(tmax_dict, ruta):
+def guardar_cache(datos_dict, ruta):
     with open(ruta, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerow(["fecha", "tmax"])
-        for fecha, tmax in sorted(tmax_dict.items()):
-            writer.writerow([fecha.isoformat(), tmax])
-    print(f"Guardado en caché: {ruta} ({len(tmax_dict)} registros)")
+        writer.writerow(["fecha"] + CAMPOS_NUMERICOS)
+        for fecha, fila in sorted(datos_dict.items()):
+            writer.writerow([fecha.isoformat()] + [fila.get(c, "") for c in CAMPOS_NUMERICOS])
+    print(f"Guardado en caché: {ruta} ({len(datos_dict)} registros)")
 
 
 def cargar_cache(ruta):
-    tmax_dict = {}
+    datos_dict = {}
     with open(ruta, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
-        for fila in reader:
-            tmax_dict[date.fromisoformat(fila["fecha"])] = float(fila["tmax"])
-    print(f"Cargado desde caché: {ruta} ({len(tmax_dict)} registros)")
-    return tmax_dict
+        for row in reader:
+            f = date.fromisoformat(row["fecha"])
+            fila = {}
+            for campo in CAMPOS_NUMERICOS:
+                valor = row.get(campo, "")
+                fila[campo] = float(valor) if valor not in ("", None) else None
+            datos_dict[f] = fila
+    print(f"Cargado desde caché: {ruta} ({len(datos_dict)} registros)")
+    return datos_dict
 
 
 def _tramos_de_seis_meses(inicio, fin):
@@ -171,7 +188,7 @@ def actualizar_cache_anio_actual(idema):
         registros_nuevos += pedir_datos(idema, tramo_inicio.isoformat(), tramo_fin.isoformat())
         time.sleep(1.5)
 
-    nuevos_tmax = parsear_tmax(registros_nuevos)
+    nuevos_tmax = parsear_registros(registros_nuevos)
     print(f"[{idema}] Registros nuevos válidos: {len(nuevos_tmax)}")
 
     actual_tmax.update(nuevos_tmax)  # los nuevos sobrescriben si hay solape
@@ -187,7 +204,7 @@ def obtener_historico(idema, forzar_redescarga=False):
         return cargar_cache(ruta)
 
     registros = descargar_historico(idema)
-    historico_tmax = parsear_tmax(registros)
+    historico_tmax = parsear_registros(registros)
     print(f"[{idema}] Registros históricos válidos: {len(historico_tmax)}")
     if historico_tmax:
         guardar_cache(historico_tmax, ruta)
