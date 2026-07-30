@@ -31,4 +31,5 @@ jobs:
           git config user.email "github-actions@github.com"
           git add cache_historico_2422.csv cache_anio_actual_2422_2026.csv calendario_percentiles_tmax.png
           git commit -m "Actualización automática de datos" || echo "Sin cambios"
+          git pull --rebase
           git push
