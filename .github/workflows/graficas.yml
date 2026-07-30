@@ -28,11 +28,11 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add calendario_percentiles_*.png linea_percentiles_*.png
+          git add graficas/*.png
           git stash --include-untracked
           git fetch origin main
           git reset --hard origin/main
           git stash pop
-          git add calendario_percentiles_*.png linea_percentiles_*.png
+          git add graficas/*.png
           git commit -m "Regenerar gráficas" || echo "Sin cambios"
           git push
