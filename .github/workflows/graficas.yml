@@ -1,0 +1,35 @@
+name: Generar gráficas
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: pip install numpy matplotlib
+
+      - name: Generar calendario de percentiles
+        run: python calendario_percentiles.py
+
+      - name: Guardar cambios en el repositorio
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add calendario_percentiles_*.png
+          git stash --include-untracked
+          git fetch origin main
+          git reset --hard origin/main
+          git stash pop
+          git add calendario_percentiles_*.png
+          git commit -m "Regenerar gráficas" || echo "Sin cambios"
+          git push
