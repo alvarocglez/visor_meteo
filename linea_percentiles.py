@@ -4,6 +4,7 @@ con las bandas de percentil (10-90 y 25-75) y la mediana histórica.
 """
 
 import sys
+import os
 import json
 from datetime import date, timedelta
 import matplotlib.pyplot as plt
