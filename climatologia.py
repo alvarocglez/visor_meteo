@@ -49,3 +49,17 @@ def percentil(valor, distribucion):
     if not distribucion:
         return None
     return sum(1 for v in distribucion if v < valor) / len(distribucion) * 100
+
+def valor_percentil(distribucion, p):
+    """Valor de la distribución que corresponde al percentil p (0-100),
+    con interpolación lineal entre los dos valores más cercanos."""
+    if not distribucion:
+        return None
+    datos = sorted(distribucion)
+    if len(datos) == 1:
+        return datos[0]
+    posicion = (p / 100) * (len(datos) - 1)
+    indice_bajo = int(posicion)
+    indice_alto = min(indice_bajo + 1, len(datos) - 1)
+    fraccion = posicion - indice_bajo
+    return datos[indice_bajo] + (datos[indice_alto] - datos[indice_bajo]) * fraccion
