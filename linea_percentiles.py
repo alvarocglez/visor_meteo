@@ -47,7 +47,8 @@ def generar_grafico(idema, nombre_estacion):
     fig.autofmt_xdate()
 
     plt.tight_layout()
-    nombre_archivo = f"linea_percentiles_{idema}.png"
+    os.makedirs("graficas", exist_ok=True)
+    nombre_archivo = f"graficas/calendario_percentiles_{idema}.png"
     plt.savefig(nombre_archivo, dpi=150, bbox_inches="tight")
     print(f"Guardado como {nombre_archivo}")
     plt.close(fig)
