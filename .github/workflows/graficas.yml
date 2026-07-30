@@ -16,7 +16,7 @@ jobs:
           python-version: "3.11"
 
       - name: Instalar dependencias
-        run: pip install numpy matplotlib
+        run: pip install numpy matplotlib requests
 
       - name: Generar calendario de percentiles
         run: python calendario_percentiles.py
