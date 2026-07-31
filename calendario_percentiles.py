@@ -31,8 +31,8 @@ def color_por_percentil(p):
 
 
 def dibujar_calendario(percentiles_dia, nombre_estacion, idema, campo="tmax"):
-    meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun",
-             "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
+    meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+             "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
     dias_en_mes = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
     etiqueta_campo = "máxima" if campo == "tmax" else "mínima"
 
@@ -59,22 +59,23 @@ def dibujar_calendario(percentiles_dia, nombre_estacion, idema, campo="tmax"):
             if texto:
                 color_texto = "white" if (p is not None and (p < 20 or p > 80)) else "#333333"
                 ax.text(x + lado / 2, y + lado / 2, texto, ha="center", va="center",
-                        fontsize=6, color=color_texto)
+                        fontsize=10, fontweight="bold", color=color_texto)
 
-        ax.text(-1.2, (11 - mes_idx) * (lado + hueco) + lado / 2, meses[mes_idx],
+        ax.text(-0.3, (11 - mes_idx) * (lado + hueco) + lado / 2, meses[mes_idx],
                 ha="right", va="center", fontsize=10)
 
     ax.set_xlim(-2, 31 * (lado + hueco))
     ax.set_ylim(-1, 12 * (lado + hueco))
     ax.set_aspect("equal")
     ax.axis("off")
-    ax.set_title(f"Percentil de temperatura {etiqueta_campo} diaria respecto a climatología histórica\n"
+    campo_bold = r"$\bf{temperatura\ " + etiqueta_campo + "}$"
+    ax.set_title(f"Percentil de {campo_bold} diaria respecto a climatología histórica\n"
                  f"{nombre_estacion} ({idema}) — ventana ±{VENTANA_DIAS} días",
                  fontsize=12)
 
     grad = np.linspace(0, 100, 256)
     colores = np.array([color_por_percentil(p) for p in grad])
-    cax = fig.add_axes([0.35, 0.04, 0.3, 0.02])
+    cax = fig.add_axes([0.35, 0.12, 0.3, 0.02])
     cax.imshow(colores.reshape(1, -1, 3), aspect="auto", extent=[0, 100, 0, 1])
     cax.set_yticks([])
     cax.set_xticks([0, 25, 50, 75, 100])
