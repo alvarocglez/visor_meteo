@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visor Meteo — Valladolid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0e141c;
+    --panel: #161f2b;
+    --panel-border: #26313f;
+    --text: #e7ecf2;
+    --text-muted: #8b97a8;
+    --cold: #5b9bd8;
+    --warm: #d68c34;
+    --mono: 'IBM Plex Mono', monospace;
+    --display: 'Space Grotesk', sans-serif;
+    --body: 'IBM Plex Sans', sans-serif;
+  }
+
+  *{ box-sizing: border-box; }
+
+  body{
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    line-height: 1.5;
+  }
+
+  .wrap{
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  /* --- Cabecera tipo panel de instrumento --- */
+  header{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+    border-bottom: 1px solid var(--panel-border);
+    padding-bottom: 20px;
+    margin-bottom: 28px;
+  }
+
+  .eyebrow{
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--cold);
+    margin: 0 0 6px;
+  }
+
+  h1{
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: clamp(28px, 5vw, 40px);
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  .estacion-meta{
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: right;
+    line-height: 1.6;
+  }
+
+  .estacion-meta span{ color: var(--text); }
+
+  /* --- Selector de estación (desplegable, listo para escalar) --- */
+  .selector-estacion{
+    margin-bottom: 24px;
+  }
+
+  .selector-estacion label{
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  select{
+    font-family: var(--mono);
+    font-size: 14px;
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    width: 100%;
+    max-width: 320px;
+  }
+
+  /* --- Interruptor Tmax / Tmin, estilo físico --- */
+  .switch-campo{
+    display: inline-flex;
+    border: 1px solid var(--panel-border);
+    border-radius: 999px;
+    padding: 3px;
+    background: var(--panel);
+    margin: 24px 0 20px;
+  }
+
+  .switch-campo button{
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .switch-campo button.activo{
+    background: var(--panel-border);
+    color: var(--text);
+  }
+
+  .switch-campo button.activo[data-campo="tmax"]{ color: var(--warm); }
+  .switch-campo button.activo[data-campo="tmin"]{ color: var(--cold); }
+
+  /* --- Tarjetas de gráfica --- */
+  .grafica{
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 24px;
+  }
+
+  .grafica h2{
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 17px;
+    margin: 0 0 4px;
+  }
+
+  .grafica p{
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0 0 16px;
+  }
+
+  .grafica img{
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 6px;
+    background: #fff;
+  }
+
+  /* --- Nota inferior --- */
+  footer{
+    margin-top: 40px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--panel-border);
+    padding-top: 16px;
+  }
+
+  footer a{ color: var(--cold); }
+
+  @media (max-width: 560px){
+    .estacion-meta{ text-align: left; }
+    header{ align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <p class="eyebrow">Visor de climatología — AEMET</p>
+      <h1 id="nombre-estacion">Valladolid</h1>
+    </div>
+    <div class="estacion-meta">
+      indicativo <span id="idema-actual">2422</span><br>
+      fuente <span>AEMET OpenData</span>
+    </div>
+  </header>
+
+  <div class="selector-estacion">
+    <label for="select-estacion">Estación</label>
+    <select id="select-estacion">
+      <option value="2422" data-nombre="Valladolid">Valladolid (2422)</option>
+    </select>
+  </div>
+
+  <div class="switch-campo" role="group" aria-label="Variable a mostrar">
+    <button data-campo="tmax" class="activo">TMÁX</button>
+    <button data-campo="tmin">TMÍN</button>
+  </div>
+
+  <section class="grafica">
+    <h2>Calendario de percentiles</h2>
+    <p>Cada día del año, coloreado según el percentil de su temperatura respecto a la climatología histórica.</p>
+    <img id="img-calendario" src="graficas/calendario_percentiles_tmax_2422.png" alt="Calendario de percentiles">
+  </section>
+
+  <section class="grafica">
+    <h2>Evolución frente a la climatología</h2>
+    <p>Temperatura real del año en curso sobre las bandas de percentil 10–90 y 25–75.</p>
+    <img id="img-linea" src="graficas/linea_percentiles_tmax_2422.png" alt="Gráfico de líneas de percentiles">
+  </section>
+
+  <footer>
+    Datos: AEMET OpenData · Actualización diaria automática · Los valores climatológicos pueden tener unos días de retraso respecto a hoy.
+  </footer>
+
+</div>
+
+<script>
+  const btnTmax = document.querySelector('button[data-campo="tmax"]');
+  const btnTmin = document.querySelector('button[data-campo="tmin"]');
+  const imgCalendario = document.getElementById('img-calendario');
+  const imgLinea = document.getElementById('img-linea');
+  const selectEstacion = document.getElementById('select-estacion');
+  const nombreEstacion = document.getElementById('nombre-estacion');
+  const idemaActual = document.getElementById('idema-actual');
+
+  let campoActual = 'tmax';
+
+  function actualizarImagenes(){
+    const idema = selectEstacion.value;
+    imgCalendario.src = `graficas/calendario_percentiles_${campoActual}_${idema}.png`;
+    imgLinea.src = `graficas/linea_percentiles_${campoActual}_${idema}.png`;
+  }
+
+  btnTmax.addEventListener('click', () => {
+    campoActual = 'tmax';
+    btnTmax.classList.add('activo');
+    btnTmin.classList.remove('activo');
+    actualizarImagenes();
+  });
+
+  btnTmin.addEventListener('click', () => {
+    campoActual = 'tmin';
+    btnTmin.classList.add('activo');
+    btnTmax.classList.remove('activo');
+    actualizarImagenes();
+  });
+
+  selectEstacion.addEventListener('change', () => {
+    const opcion = selectEstacion.options[selectEstacion.selectedIndex];
+    nombreEstacion.textContent = opcion.dataset.nombre;
+    idemaActual.textContent = selectEstacion.value;
+    actualizarImagenes();
+  });
+</script>
+
+</body>
+</html>
