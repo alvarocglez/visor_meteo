@@ -212,13 +212,13 @@
   <section class="grafica">
     <h2>Calendario de percentiles</h2>
     <p>Cada día del año, coloreado según el percentil de su temperatura respecto a la climatología histórica.</p>
-    <img id="img-calendario" src="graficas/calendario_percentiles_tmax_2422.png" alt="Calendario de percentiles">
+    <img id="img-calendario" alt="Calendario de percentiles">
   </section>
 
   <section class="grafica">
     <h2>Evolución frente a la climatología</h2>
     <p>Temperatura real del año en curso sobre las bandas de percentil 10–90 y 25–75.</p>
-    <img id="img-linea" src="graficas/linea_percentiles_tmax_2422.png" alt="Gráfico de líneas de percentiles">
+    <img id="img-linea" alt="Gráfico de líneas de percentiles">
   </section>
 
   <footer>
@@ -240,8 +240,9 @@
 
   function actualizarImagenes(){
     const idema = selectEstacion.value;
-    imgCalendario.src = `graficas/calendario_percentiles_${campoActual}_${idema}.png`;
-    imgLinea.src = `graficas/linea_percentiles_${campoActual}_${idema}.png`;
+    const marca = Date.now(); // fuerza recarga, evita caché del navegador
+    imgCalendario.src = `graficas/calendario_percentiles_${campoActual}_${idema}.png?v=${marca}`;
+    imgLinea.src = `graficas/linea_percentiles_${campoActual}_${idema}.png?v=${marca}`;
   }
 
   btnTmax.addEventListener('click', () => {
@@ -264,6 +265,8 @@
     idemaActual.textContent = selectEstacion.value;
     actualizarImagenes();
   });
+
+actualizarImagenes(); // carga inicial, con cache-busting
 </script>
 
 </body>
