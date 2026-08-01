@@ -156,9 +156,10 @@
     margin: 0 0 16px;
   }
 
-  .grafica img{
+  .grafica iframe{
     width: 100%;
-    height: auto;
+    height: 640px;
+    border: none;
     display: block;
     border-radius: 6px;
     background: #fff;
@@ -206,13 +207,13 @@
   <section class="grafica">
     <h2>Calendario de percentiles</h2>
     <p>Cada día del año, coloreado según el percentil de su temperatura respecto a la climatología histórica.</p>
-    <img id="img-calendario" alt="Calendario de percentiles">
+    <iframe id="img-calendario" alt="Calendario de percentiles">
   </section>
 
   <section class="grafica">
     <h2>Evolución frente a la climatología</h2>
     <p>Temperatura real del año en curso sobre las bandas de percentil 10–90 y 25–75.</p>
-    <img id="img-linea" alt="Gráfico de líneas de percentiles">
+    <iframe id="img-linea" alt="Gráfico de líneas de percentiles">
   </section>
 
   <footer>
