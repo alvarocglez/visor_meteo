@@ -65,7 +65,9 @@ def cargar_cache_observacion(idema):
         with open(ruta, newline="", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                lecturas[row["fint"]] = float(row["ta"])
+                ta = float(row["ta"]) if row.get("ta") not in ("", None) else None
+                prec = float(row["prec"]) if row.get("prec") not in ("", None) else None
+                lecturas[row["fint"]] = {"ta": ta, "prec": prec}
     return lecturas
 
 
@@ -73,9 +75,9 @@ def guardar_cache_observacion(idema, lecturas):
     ruta = RUTA_CACHE_OBSERVACION.format(idema=idema)
     with open(ruta, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerow(["fint", "ta"])
-        for fint, ta in sorted(lecturas.items()):
-            writer.writerow([fint, ta])
+        writer.writerow(["fint", "ta", "prec"])
+        for fint, fila in sorted(lecturas.items()):
+            writer.writerow([fint, fila.get("ta", ""), fila.get("prec", "")])
 
 
 def purgar_antiguas(lecturas, horas=25):
@@ -89,67 +91,83 @@ def purgar_antiguas(lecturas, horas=25):
 
 
 def generar_grafico(idema, nombre_estacion, lecturas_nuevas):
-    # Combina lo que ya teníamos en caché con lo nuevo recibido de AEMET
     cache = cargar_cache_observacion(idema)
 
     lecturas_estacion = [l for l in lecturas_nuevas if l.get("idema") == idema]
     for l in lecturas_estacion:
         fint = l.get("fint")
         ta = l.get("ta")
-        if fint and ta is not None:
-            cache[fint] = ta  # sobrescribe si ya existía, añade si es nueva
+        prec = l.get("prec")
+        if fint:
+            cache[fint] = {"ta": ta, "prec": prec}
 
     cache = purgar_antiguas(cache)
     guardar_cache_observacion(idema, cache)
 
     fints_ordenados = sorted(cache.keys())
 
-    horas, temperaturas, textos = [], [], []
+    horas, temperaturas, precipitaciones, textos_temp, textos_prec = [], [], [], [], []
     for fint in fints_ordenados:
-        temp = cache[fint]
+        fila = cache[fint]
         fecha_utc = datetime.strptime(fint.split("+")[0], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc)
         fecha_local = fecha_utc.astimezone(ZoneInfo("Europe/Madrid"))
         horas.append(fecha_local)
-        temperaturas.append(temp)
-        textos.append(f"<b>{fecha_local.strftime('%H:%M')}</b><br>{temp:.1f}°C")
 
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(
+        ta = fila.get("ta")
+        temperaturas.append(ta)
+        textos_temp.append(f"<b>{fecha_local.strftime('%H:%M')}</b><br>{ta:.1f}°C" if ta is not None else "")
+
+        prec = fila.get("prec") or 0
+        precipitaciones.append(prec)
+        textos_prec.append(f"<b>{fecha_local.strftime('%H:%M')}</b><br>{prec:.1f} mm")
+
+    # --- Gráfico de temperatura ---
+    fig_temp = go.Figure()
+    fig_temp.add_trace(go.Scatter(
         x=horas, y=temperaturas, mode="lines+markers",
         line=dict(color=COLOR_LINEA, width=2.2, shape="spline", smoothing=0.5),
         marker=dict(size=5),
-        text=textos, hoverinfo="text",
+        text=textos_temp, hoverinfo="text",
     ))
+    fig_temp.update_layout(
+        xaxis=dict(tickformat="%H:%M", showgrid=True, gridcolor="rgba(0,0,0,0.06)",
+                    showline=True, linecolor="rgba(0,0,0,0.2)"),
+        yaxis=dict(title="Temperatura (°C)", showgrid=True, gridcolor="rgba(0,0,0,0.06)"),
+        plot_bgcolor="white", hovermode="x unified",
+        dragmode=False,
+        hoverlabel=dict(bgcolor="#161f2b", bordercolor="#26313f",
+                         font=dict(color="white", size=13, family="IBM Plex Mono, monospace")),
+        margin=dict(l=60, r=20, t=20, b=40), autosize=True,
+    )
 
-    fig.update_layout(
-        xaxis=dict(
-            tickformat="%H:%M",
-            showgrid=True, gridcolor="rgba(0,0,0,0.06)",
-            showline=True, linecolor="rgba(0,0,0,0.2)",
-        ),
-        yaxis=dict(
-            title="Temperatura (°C)",
-            showgrid=True, gridcolor="rgba(0,0,0,0.06)",
-        ),
-        plot_bgcolor="white",
-        hovermode="x unified",
-        hoverlabel=dict(
-            bgcolor="#161f2b", bordercolor="#26313f",
-            font=dict(color="white", size=13, family="IBM Plex Mono, monospace"),
-        ),
-        margin=dict(l=60, r=20, t=20, b=40),
-        autosize=True,
+    # --- Gráfico de precipitación (barras) ---
+    fig_prec = go.Figure()
+    fig_prec.add_trace(go.Bar(
+        x=horas, y=precipitaciones,
+        marker=dict(color="rgb(91,155,216)"),
+        text=textos_prec, hoverinfo="text",
+    ))
+    fig_prec.update_layout(
+        xaxis=dict(tickformat="%H:%M", showgrid=True, gridcolor="rgba(0,0,0,0.06)",
+                    showline=True, linecolor="rgba(0,0,0,0.2)"),
+        yaxis=dict(title="Precipitación (mm)", showgrid=True, gridcolor="rgba(0,0,0,0.06)"),
+        plot_bgcolor="white", hovermode="x unified",
+        dragmode=False,
+        hoverlabel=dict(bgcolor="#161f2b", bordercolor="#26313f",
+                         font=dict(color="white", size=13, family="IBM Plex Mono, monospace")),
+        margin=dict(l=60, r=20, t=20, b=40), autosize=True,
     )
 
     os.makedirs("graficas", exist_ok=True)
-    nombre_archivo = f"graficas/observacion_{idema}.html"
-    fig.write_html(
-        nombre_archivo, include_plotlyjs="cdn", full_html=True,
-        config={"responsive": True, "displayModeBar": False},
-        default_width="100%", default_height="100%",
-    )
-    print(f"Guardado como {nombre_archivo} ({len(horas)} lecturas acumuladas)")
 
+    config_comun = dict(include_plotlyjs="cdn", full_html=True,
+                         config={"responsive": True, "displayModeBar": False, "scrollZoom": False},
+                         default_width="100%", default_height="100%")
+
+    fig_temp.write_html(f"graficas/observacion_{idema}.html", **config_comun)
+    fig_prec.write_html(f"graficas/observacion_prec_{idema}.html", **config_comun)
+
+    print(f"Guardado observacion_{idema}.html y observacion_prec_{idema}.html ({len(horas)} lecturas acumuladas)")
 
 if __name__ == "__main__":
     with open("estaciones.json", encoding="utf-8") as f:

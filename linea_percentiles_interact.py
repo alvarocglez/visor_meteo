@@ -121,6 +121,7 @@ def generar_grafico(idema, nombre_estacion, campo="tmax"):
             zeroline=False,
         ),
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),        hovermode="x unified",
+        dragmode=False,
         hoverlabel=dict(
             bgcolor="#161f2b",
             bordercolor="#26313f",
@@ -137,7 +138,7 @@ def generar_grafico(idema, nombre_estacion, campo="tmax"):
         nombre_archivo,
         include_plotlyjs="cdn",
         full_html=True,
-        config={"responsive": True, "displayModeBar": False},
+        config={"responsive": True, "displayModeBar": False, "scrollZoom": False},
     )
     print(f"Guardado como {nombre_archivo}")
 

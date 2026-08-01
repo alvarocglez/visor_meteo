@@ -99,9 +99,10 @@ def generar_grafico(idema, nombre_estacion, campo="tmax"):
 
     fig.update_layout(
         xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-        yaxis=dict(showgrid=False, zeroline=False, autorange="reversed", ticklabelstandoff=15),
+        yaxis=dict(showgrid=False, zeroline=False, autorange="reversed", ticklabelstandoff=15, scaleanchor="x"),
         plot_bgcolor="white",
         autosize=True,
+        dragmode=False,
         margin=dict(l=60, r=20, t=20, b=20),
         hoverlabel=dict(
             bgcolor="#161f2b",
@@ -117,7 +118,7 @@ def generar_grafico(idema, nombre_estacion, campo="tmax"):
         nombre_archivo,
         include_plotlyjs="cdn",
         full_html=True,
-        config={"responsive": True, "displayModeBar": False},
+        config={"responsive": True, "displayModeBar": False, "scrollZoom": False},
         default_width="100%",
         default_height="100%",
     )

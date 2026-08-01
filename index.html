@@ -234,9 +234,15 @@
 
   <div id="panel-observacion" class="panel">
     <section class="grafica">
-      <h2>Últimas 24 horas</h2>
+      <h2>Últimas 24 horas — Temperatura</h2>
       <p>Temperatura observada en tiempo casi real (datos horarios de AEMET).</p>
       <iframe id="img-observacion" class="iframe-linea" title="Observación últimas 24h"></iframe>
+    </section>
+
+    <section class="grafica">
+      <h2>Últimas 24 horas — Precipitación</h2>
+      <p>Precipitación acumulada por hora.</p>
+      <iframe id="img-observacion-prec" class="iframe-linea" title="Precipitación últimas 24h"></iframe>
     </section>
   </div>
 
@@ -272,6 +278,7 @@
     const idema = selectEstacion.value;
     const marca = Date.now();
     imgObservacion.src = `graficas/observacion_${idema}.html?v=${marca}`;
+    document.getElementById('img-observacion-prec').src = `graficas/observacion_prec_${idema}.html?v=${marca}`;
   }
 
   btnTmax.addEventListener('click', () => {
