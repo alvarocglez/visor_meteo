@@ -207,13 +207,13 @@
   <section class="grafica">
     <h2>Calendario de percentiles</h2>
     <p>Cada día del año, coloreado según el percentil de su temperatura respecto a la climatología histórica.</p>
-    <iframe id="img-calendario" alt="Calendario de percentiles">
+    <iframe id="img-calendario" title="Calendario de percentiles"></iframe>
   </section>
 
   <section class="grafica">
     <h2>Evolución frente a la climatología</h2>
     <p>Temperatura real del año en curso sobre las bandas de percentil 10–90 y 25–75.</p>
-    <iframe id="img-linea" alt="Gráfico de líneas de percentiles">
+    <iframe id="img-linea" title="Gráfico de líneas de percentiles"></iframe>
   </section>
 
   <footer>
@@ -235,9 +235,9 @@
 
   function actualizarImagenes(){
     const idema = selectEstacion.value;
-    const marca = Date.now(); // fuerza recarga, evita caché del navegador
-    imgCalendario.src = `graficas/calendario_percentiles_${campoActual}_${idema}.png?v=${marca}`;
-    imgLinea.src = `graficas/linea_percentiles_${campoActual}_${idema}.png?v=${marca}`;
+    const marca = Date.now();
+    imgCalendario.src = `graficas/calendario_percentiles_${campoActual}_${idema}.html?v=${marca}`;
+    imgLinea.src = `graficas/linea_percentiles_${campoActual}_${idema}.html?v=${marca}`;
   }
 
   btnTmax.addEventListener('click', () => {
