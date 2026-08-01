@@ -99,7 +99,7 @@ def generar_grafico(idema, nombre_estacion, campo="tmax"):
 
     fig.update_layout(
         xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-        yaxis=dict(showgrid=False, zeroline=False, autorange="reversed"),
+        yaxis=dict(showgrid=False, zeroline=False, autorange="reversed", ticklabelstandoff=15),
         plot_bgcolor="white",
         autosize=True,
         margin=dict(l=60, r=20, t=20, b=20),
