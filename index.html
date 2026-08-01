@@ -133,6 +133,32 @@
   .switch-campo button.activo[data-campo="tmax"]{ color: var(--warm); }
   .switch-campo button.activo[data-campo="tmin"]{ color: var(--cold); }
 
+  .tabs{
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--panel-border);
+    margin-bottom: 24px;
+  }
+
+  .tab{
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    padding: 10px 4px;
+    margin-right: 20px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .tab.activa{
+    color: var(--text);
+    border-bottom-color: var(--cold);
+  }
   /* --- Tarjetas de gráfica --- */
   .grafica{
     background: var(--panel);
@@ -201,28 +227,37 @@
     </select>
   </div>
 
-  <div class="switch-campo" role="group" aria-label="Variable a mostrar">
-    <button data-campo="tmax" class="activo">TMÁX</button>
-    <button data-campo="tmin">TMÍN</button>
+  <div class="tabs" role="tablist" aria-label="Vista">
+    <button class="tab activa" data-tab="climatologia">Climatología</button>
+    <button class="tab" data-tab="observacion">Observación 24h</button>
   </div>
 
-  <section class="grafica">
-    <h2>Calendario de percentiles</h2>
-    <p>Cada día del año, coloreado según el percentil de su temperatura respecto a la climatología histórica.</p>
-    <iframe id="img-calendario" class="iframe-calendario" title="Calendario de percentiles"></iframe>
-  </section>
+  <div id="panel-climatologia" class="panel">
+    <div class="switch-campo" role="group" aria-label="Variable a mostrar">
+      <button data-campo="tmax" class="activo">TMÁX</button>
+      <button data-campo="tmin">TMÍN</button>
+    </div>
 
-  <section class="grafica">
-    <h2>Evolución frente a la climatología</h2>
-    <p>Temperatura real del año en curso sobre las bandas de percentil 10–90 y 25–75.</p>
-    <iframe id="img-linea" class="iframe-linea" title="Gráfico de líneas de percentiles"></iframe>
-  </section>
+    <section class="grafica">
+      <h2>Calendario de percentiles</h2>
+      <p>Cada día del año, coloreado según el percentil de su temperatura respecto a la climatología histórica.</p>
+      <iframe id="img-calendario" class="iframe-calendario" title="Calendario de percentiles"></iframe>
+    </section>
 
-  <section class="grafica">
-    <h2>Últimas 24h</h2>
-    <p>Temperatura observada en tiempo casi real (datos horarios de AEMET).</p>
-    <iframe id="img-observacion" class="iframe-linea" title="Observación últimas 24h"></iframe>
-  </section>
+    <section class="grafica">
+      <h2>Evolución frente a la climatología</h2>
+      <p>Temperatura real del año en curso sobre las bandas de percentil 10–90 y 25–75.</p>
+      <iframe id="img-linea" class="iframe-linea" title="Gráfico de líneas de percentiles"></iframe>
+    </section>
+  </div>
+
+  <div id="panel-observacion" class="panel" hidden>
+    <section class="grafica">
+      <h2>Últimas 24h</h2>
+      <p>Temperatura observada en tiempo casi real (datos horarios de AEMET).</p>
+      <iframe id="img-observacion" class="iframe-linea" title="Observación últimas 24h"></iframe>
+    </section>
+  </div>
 
   <footer>
     Datos: AEMET OpenData · Actualización diaria automática · Los valores climatológicos pueden tener unos días de retraso respecto a hoy.
@@ -235,19 +270,24 @@
   const btnTmin = document.querySelector('button[data-campo="tmin"]');
   const imgCalendario = document.getElementById('img-calendario');
   const imgLinea = document.getElementById('img-linea');
+  const imgObservacion = document.getElementById('img-observacion');
   const selectEstacion = document.getElementById('select-estacion');
-  const nombreEstacion = document.getElementById('nombre-estacion');
-  const idemaActual = document.getElementById('idema-actual');
+  const tabs = document.querySelectorAll('.tab');
+  const panelClimatologia = document.getElementById('panel-climatologia');
+  const panelObservacion = document.getElementById('panel-observacion');
 
   let campoActual = 'tmax';
 
-  const imgObservacion = document.getElementById('img-observacion');
-
-  function actualizarImagenes(){
+  function actualizarClimatologia(){
     const idema = selectEstacion.value;
     const marca = Date.now();
     imgCalendario.src = `graficas/calendario_percentiles_${campoActual}_${idema}.html?v=${marca}`;
     imgLinea.src = `graficas/linea_percentiles_${campoActual}_${idema}.html?v=${marca}`;
+  }
+
+  function actualizarObservacion(){
+    const idema = selectEstacion.value;
+    const marca = Date.now();
     imgObservacion.src = `graficas/observacion_${idema}.html?v=${marca}`;
   }
 
@@ -255,24 +295,38 @@
     campoActual = 'tmax';
     btnTmax.classList.add('activo');
     btnTmin.classList.remove('activo');
-    actualizarImagenes();
+    actualizarClimatologia();
   });
 
   btnTmin.addEventListener('click', () => {
     campoActual = 'tmin';
     btnTmin.classList.add('activo');
     btnTmax.classList.remove('activo');
-    actualizarImagenes();
+    actualizarClimatologia();
   });
 
   selectEstacion.addEventListener('change', () => {
-    const opcion = selectEstacion.options[selectEstacion.selectedIndex];
-    nombreEstacion.textContent = opcion.dataset.nombre;
-    idemaActual.textContent = selectEstacion.value;
-    actualizarImagenes();
+    actualizarClimatologia();
+    actualizarObservacion();
   });
 
-actualizarImagenes(); // carga inicial, con cache-busting
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('activa'));
+      tab.classList.add('activa');
+
+      if (tab.dataset.tab === 'climatologia'){
+        panelClimatologia.hidden = false;
+        panelObservacion.hidden = true;
+      } else {
+        panelClimatologia.hidden = true;
+        panelObservacion.hidden = false;
+        actualizarObservacion(); // carga la observación solo cuando se entra a esa pestaña
+      }
+    });
+  });
+
+  actualizarClimatologia(); // carga inicial
 </script>
 
 </body>
