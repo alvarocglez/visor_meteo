@@ -103,7 +103,7 @@ def generar_grafico(idema, nombre_estacion, lecturas):
     nombre_archivo = f"graficas/observacion_{idema}.html"
     fig.write_html(
         nombre_archivo, include_plotlyjs="cdn", full_html=True,
-        config={"responsive": True},
+        config={"responsive": True, "displayModeBar": False},
         default_width="100%", default_height="100%",
     )
     print(f"Guardado como {nombre_archivo} ({len(horas)} lecturas)")

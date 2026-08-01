@@ -207,11 +207,13 @@
   </div>
 
   <div class="tabs" role="tablist" aria-label="Vista">
-    <button class="tab activa" data-tab="climatologia">Climatología</button>
-    <button class="tab" data-tab="observacion">Observación 24h</button>
+    <button class="tab activa" data-tab="observacion">Observación 24h</button>
+    <button class="tab" data-tab="climatologia">Climatología</button>
   </div>
 
-  <div id="panel-climatologia" class="panel">
+  
+
+  <div id="panel-climatologia" class="panel" hidden>
     <div class="switch-campo" role="group" aria-label="Variable a mostrar">
       <button data-campo="tmax" class="activo">TMÁX</button>
       <button data-campo="tmin">TMÍN</button>
@@ -230,13 +232,15 @@
     </section>
   </div>
 
-  <div id="panel-observacion" class="panel" hidden>
+  <div id="panel-observacion" class="panel">
     <section class="grafica">
       <h2>Últimas 24 horas</h2>
       <p>Temperatura observada en tiempo casi real (datos horarios de AEMET).</p>
       <iframe id="img-observacion" class="iframe-linea" title="Observación últimas 24h"></iframe>
     </section>
   </div>
+
+  
 
   <footer>
     Datos: AEMET OpenData · Actualización diaria automática · Los valores climatológicos pueden tener unos días de retraso respecto a hoy.
@@ -305,7 +309,7 @@
     });
   });
 
-  actualizarClimatologia(); // carga inicial
+  actualizarObservacion(); // carga inicial (observación es la pestaña activa por defecto)
 </script>
 
 </body>

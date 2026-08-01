@@ -117,7 +117,7 @@ def generar_grafico(idema, nombre_estacion, campo="tmax"):
         nombre_archivo,
         include_plotlyjs="cdn",
         full_html=True,
-        config={"responsive": True},
+        config={"responsive": True, "displayModeBar": False},
         default_width="100%",
         default_height="100%",
     )
