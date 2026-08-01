@@ -14,6 +14,9 @@ import plotly.graph_objects as go
 from zoneinfo import ZoneInfo
 from datetime import timedelta
 
+from dotenv import load_dotenv
+load_dotenv()
+
 API_KEY = os.environ.get("AEMET_API_KEY")
 HEADERS = {"api_key": API_KEY}
 URL_OBSERVACION = "https://opendata.aemet.es/opendata/api/observacion/convencional/todas"
@@ -134,10 +137,9 @@ def generar_grafico(idema, nombre_estacion, lecturas_nuevas):
                     showline=True, linecolor="rgba(0,0,0,0.2)"),
         yaxis=dict(title="Temperatura (°C)", showgrid=True, gridcolor="rgba(0,0,0,0.06)"),
         plot_bgcolor="white", hovermode="x unified",
-        dragmode=False,
         hoverlabel=dict(bgcolor="#161f2b", bordercolor="#26313f",
                          font=dict(color="white", size=13, family="IBM Plex Mono, monospace")),
-        margin=dict(l=60, r=20, t=20, b=40), autosize=True,
+        margin=dict(l=60, r=20, t=20, b=40), autosize=True, dragmode=False,
     )
 
     # --- Gráfico de precipitación (barras) ---
@@ -152,10 +154,9 @@ def generar_grafico(idema, nombre_estacion, lecturas_nuevas):
                     showline=True, linecolor="rgba(0,0,0,0.2)"),
         yaxis=dict(title="Precipitación (mm)", showgrid=True, gridcolor="rgba(0,0,0,0.06)"),
         plot_bgcolor="white", hovermode="x unified",
-        dragmode=False,
         hoverlabel=dict(bgcolor="#161f2b", bordercolor="#26313f",
                          font=dict(color="white", size=13, family="IBM Plex Mono, monospace")),
-        margin=dict(l=60, r=20, t=20, b=40), autosize=True,
+        margin=dict(l=60, r=20, t=20, b=40), autosize=True, dragmode=False,
     )
 
     os.makedirs("graficas", exist_ok=True)

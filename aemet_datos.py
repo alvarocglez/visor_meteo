@@ -11,6 +11,9 @@ import time
 import requests
 from datetime import date, timedelta
 
+from dotenv import load_dotenv
+load_dotenv()
+
 API_KEY = os.environ.get("AEMET_API_KEY")
 
 BASE_URL = "https://opendata.aemet.es/opendata/api/valores/climatologicos/diarios/datos"
