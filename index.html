@@ -6,18 +6,18 @@
 <title>Visor Meteo — Valladolid</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Syne:wght@600;700&display=swap" rel="stylesheet"><style>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:wght@500;600&display=swap" rel="stylesheet">
+<style>
   :root{
-    --bg: #f4f6f8;
+    --bg: #f7f7f5;
     --panel: #ffffff;
-    --panel-border: #d0d7de;
-    --text: #1b2128;
-    --text-muted: #57606a;
-    --cold: #0969da;
-    --warm: #cf222e;
-    --mono: 'Geist Mono', monospace;
-    --display: 'Syne', sans-serif;
-    --body: 'Geist Mono', monospace;
+    --panel-border: #e4e4e0;
+    --text: #23262b;
+    --text-muted: #6b7280;
+    --cold: #2563a8;
+    --warm: #b8452e;
+    --display: 'Fraunces', serif;
+    --body: 'Inter', -apple-system, sans-serif;
   }
 
   *{ box-sizing: border-box; }
@@ -27,96 +27,106 @@
     background: var(--bg);
     color: var(--text);
     font-family: var(--body);
-    line-height: 1.5;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
   }
 
   .wrap{
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 32px 20px 80px;
+    padding: 40px 24px 100px;
   }
 
-  /* --- Cabecera tipo panel de instrumento --- */
   header{
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    flex-wrap: wrap;
-    gap: 16px;
-    border-bottom: 1px solid var(--panel-border);
-    padding-bottom: 20px;
-    margin-bottom: 28px;
-  }
-
-  .eyebrow{
-    font-family: var(--mono);
-    font-size: 12px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--cold);
-    margin: 0 0 6px;
+    margin-bottom: 32px;
   }
 
   h1{
     font-family: var(--display);
     font-weight: 600;
-    font-size: clamp(28px, 5vw, 40px);
-    margin: 0;
+    font-size: clamp(30px, 4.5vw, 42px);
+    margin: 0 0 8px;
     letter-spacing: -0.01em;
   }
 
-  .estacion-meta{
-    font-family: var(--mono);
-    font-size: 12px;
+  header p.subtitulo{
+    font-size: 16px;
     color: var(--text-muted);
-    text-align: right;
-    line-height: 1.6;
+    margin: 0;
   }
 
-  .estacion-meta span{ color: var(--text); }
-
-  /* --- Selector de estación (desplegable, listo para escalar) --- */
   .selector-estacion{
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
 
   .selector-estacion label{
-    font-family: var(--mono);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    font-size: 14px;
+    font-weight: 500;
     color: var(--text-muted);
     display: block;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
   }
 
   select{
-    font-family: var(--mono);
-    font-size: 14px;
+    font-family: var(--body);
+    font-size: 16px;
     background: var(--panel);
     color: var(--text);
     border: 1px solid var(--panel-border);
-    border-radius: 6px;
-    padding: 10px 14px;
+    border-radius: 8px;
+    padding: 12px 16px;
     width: 100%;
-    max-width: 320px;
+    max-width: 340px;
+    cursor: pointer;
   }
 
-  /* --- Interruptor Tmax / Tmin, estilo físico --- */
+  .tabs{
+    display: flex;
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 5px;
+    margin-bottom: 28px;
+  }
+
+  .tab{
+    flex: 1;
+    font-family: var(--body);
+    font-weight: 600;
+    font-size: 16px;
+    padding: 14px 8px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .tab.activa{
+    background: var(--bg);
+    color: var(--text);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .panel[hidden]{ display: none; }
+
   .switch-campo{
     display: inline-flex;
     border: 1px solid var(--panel-border);
     border-radius: 999px;
-    padding: 3px;
+    padding: 4px;
     background: var(--panel);
-    margin: 24px 0 20px;
+    margin: 0 0 20px;
   }
 
   .switch-campo button{
-    font-family: var(--mono);
-    font-size: 13px;
-    letter-spacing: 0.04em;
-    padding: 8px 20px;
+    font-family: var(--body);
+    font-weight: 600;
+    font-size: 14px;
+    padding: 9px 22px;
     border: none;
     border-radius: 999px;
     background: transparent;
@@ -126,62 +136,58 @@
   }
 
   .switch-campo button.activo{
-    background: var(--panel-border);
-    color: var(--text);
+    background: var(--bg);
   }
 
   .switch-campo button.activo[data-campo="tmax"]{ color: var(--warm); }
   .switch-campo button.activo[data-campo="tmin"]{ color: var(--cold); }
 
-  /* --- Tarjetas de gráfica --- */
   .grafica{
     background: var(--panel);
     border: 1px solid var(--panel-border);
-    border-radius: 10px;
-    padding: 18px;
+    border-radius: 14px;
+    padding: 24px;
     margin-bottom: 24px;
   }
 
   .grafica h2{
     font-family: var(--display);
-    font-weight: 500;
-    font-size: 17px;
-    margin: 0 0 4px;
+    font-weight: 600;
+    font-size: 22px;
+    margin: 0 0 6px;
   }
 
   .grafica p{
-    font-family: var(--mono);
-    font-size: 12px;
+    font-size: 15px;
     color: var(--text-muted);
-    margin: 0 0 16px;
+    margin: 0 0 18px;
   }
 
   .grafica iframe{
     width: 100%;
     border: none;
     display: block;
-    border-radius: 6px;
+    border-radius: 8px;
     background: #fff;
   }
 
-  .iframe-calendario{ height: 700px; }
-  .iframe-linea{ height: 480px; }
+  .iframe-calendario{ height: 900px; }
+  .iframe-linea{ height: 500px; }
 
-  /* --- Nota inferior --- */
   footer{
     margin-top: 40px;
-    font-family: var(--mono);
-    font-size: 11px;
+    font-size: 13px;
     color: var(--text-muted);
     border-top: 1px solid var(--panel-border);
-    padding-top: 16px;
+    padding-top: 18px;
   }
 
   footer a{ color: var(--cold); }
 
   @media (max-width: 560px){
-    .estacion-meta{ text-align: left; }
-    header{ align-items: flex-start; }
+    .wrap{ padding: 28px 16px 80px; }
+    .iframe-calendario{ height: 760px; }
+    .iframe-linea{ height: 380px; }
   }
 </style>
 </head>
@@ -189,9 +195,8 @@
 <div class="wrap">
 
   <header>
-    <div>
-      <h1 id="nombre-estacion">VISOR DE METEO Y CLIMA</h1>
-    </div>
+    <h1>Visor meteorológico</h1>
+    <p class="subtitulo">Datos y climatología de estaciones de AEMET</p>
   </header>
 
   <div class="selector-estacion">
@@ -201,28 +206,37 @@
     </select>
   </div>
 
-  <div class="switch-campo" role="group" aria-label="Variable a mostrar">
-    <button data-campo="tmax" class="activo">TMÁX</button>
-    <button data-campo="tmin">TMÍN</button>
+  <div class="tabs" role="tablist" aria-label="Vista">
+    <button class="tab activa" data-tab="climatologia">Climatología</button>
+    <button class="tab" data-tab="observacion">Observación 24h</button>
   </div>
 
-  <section class="grafica">
-    <h2>Calendario de percentiles</h2>
-    <p>Cada día del año, coloreado según el percentil de su temperatura respecto a la climatología histórica.</p>
-    <iframe id="img-calendario" class="iframe-calendario" title="Calendario de percentiles"></iframe>
-  </section>
+  <div id="panel-climatologia" class="panel">
+    <div class="switch-campo" role="group" aria-label="Variable a mostrar">
+      <button data-campo="tmax" class="activo">TMÁX</button>
+      <button data-campo="tmin">TMÍN</button>
+    </div>
 
-  <section class="grafica">
-    <h2>Evolución frente a la climatología</h2>
-    <p>Temperatura real del año en curso sobre las bandas de percentil 10–90 y 25–75.</p>
-    <iframe id="img-linea" class="iframe-linea" title="Gráfico de líneas de percentiles"></iframe>
-  </section>
+    <section class="grafica">
+      <h2>Calendario de percentiles</h2>
+      <p>Cada día del año, coloreado según el percentil de su temperatura respecto a la climatología histórica.</p>
+      <iframe id="img-calendario" class="iframe-calendario" title="Calendario de percentiles"></iframe>
+    </section>
 
-  <section class="grafica">
-    <h2>Últimas 24h</h2>
-    <p>Temperatura observada en tiempo casi real (datos horarios de AEMET).</p>
-    <iframe id="img-observacion" class="iframe-linea" title="Observación últimas 24h"></iframe>
-  </section>
+    <section class="grafica">
+      <h2>Evolución frente a la climatología</h2>
+      <p>Temperatura real del año en curso sobre las bandas de percentil 10–90 y 25–75.</p>
+      <iframe id="img-linea" class="iframe-linea" title="Gráfico de líneas de percentiles"></iframe>
+    </section>
+  </div>
+
+  <div id="panel-observacion" class="panel" hidden>
+    <section class="grafica">
+      <h2>Últimas 24 horas</h2>
+      <p>Temperatura observada en tiempo casi real (datos horarios de AEMET).</p>
+      <iframe id="img-observacion" class="iframe-linea" title="Observación últimas 24h"></iframe>
+    </section>
+  </div>
 
   <footer>
     Datos: AEMET OpenData · Actualización diaria automática · Los valores climatológicos pueden tener unos días de retraso respecto a hoy.
@@ -235,19 +249,24 @@
   const btnTmin = document.querySelector('button[data-campo="tmin"]');
   const imgCalendario = document.getElementById('img-calendario');
   const imgLinea = document.getElementById('img-linea');
+  const imgObservacion = document.getElementById('img-observacion');
   const selectEstacion = document.getElementById('select-estacion');
-  const nombreEstacion = document.getElementById('nombre-estacion');
-  const idemaActual = document.getElementById('idema-actual');
+  const tabs = document.querySelectorAll('.tab');
+  const panelClimatologia = document.getElementById('panel-climatologia');
+  const panelObservacion = document.getElementById('panel-observacion');
 
   let campoActual = 'tmax';
 
-  const imgObservacion = document.getElementById('img-observacion');
-
-  function actualizarImagenes(){
+  function actualizarClimatologia(){
     const idema = selectEstacion.value;
     const marca = Date.now();
     imgCalendario.src = `graficas/calendario_percentiles_${campoActual}_${idema}.html?v=${marca}`;
     imgLinea.src = `graficas/linea_percentiles_${campoActual}_${idema}.html?v=${marca}`;
+  }
+
+  function actualizarObservacion(){
+    const idema = selectEstacion.value;
+    const marca = Date.now();
     imgObservacion.src = `graficas/observacion_${idema}.html?v=${marca}`;
   }
 
@@ -255,24 +274,38 @@
     campoActual = 'tmax';
     btnTmax.classList.add('activo');
     btnTmin.classList.remove('activo');
-    actualizarImagenes();
+    actualizarClimatologia();
   });
 
   btnTmin.addEventListener('click', () => {
     campoActual = 'tmin';
     btnTmin.classList.add('activo');
     btnTmax.classList.remove('activo');
-    actualizarImagenes();
+    actualizarClimatologia();
   });
 
   selectEstacion.addEventListener('change', () => {
-    const opcion = selectEstacion.options[selectEstacion.selectedIndex];
-    nombreEstacion.textContent = opcion.dataset.nombre;
-    idemaActual.textContent = selectEstacion.value;
-    actualizarImagenes();
+    actualizarClimatologia();
+    actualizarObservacion();
   });
 
-actualizarImagenes(); // carga inicial, con cache-busting
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('activa'));
+      tab.classList.add('activa');
+
+      if (tab.dataset.tab === 'climatologia'){
+        panelClimatologia.hidden = false;
+        panelObservacion.hidden = true;
+      } else {
+        panelClimatologia.hidden = true;
+        panelObservacion.hidden = false;
+        actualizarObservacion();
+      }
+    });
+  });
+
+  actualizarClimatologia(); // carga inicial
 </script>
 
 </body>
