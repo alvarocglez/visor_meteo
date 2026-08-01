@@ -6,15 +6,19 @@ casi en tiempo real - a diferencia de la climatología, que tiene días de retra
 
 import os
 import json
+import csv
 import time
 import requests
 from datetime import datetime, timezone
 import plotly.graph_objects as go
 from zoneinfo import ZoneInfo
+from datetime import timedelta
 
 API_KEY = os.environ.get("AEMET_API_KEY")
 HEADERS = {"api_key": API_KEY}
 URL_OBSERVACION = "https://opendata.aemet.es/opendata/api/observacion/convencional/todas"
+
+RUTA_CACHE_OBSERVACION = "cache_observacion_{idema}.csv"
 
 COLOR_LINEA = "rgb(153,60,29)"
 
@@ -54,18 +58,56 @@ def pedir_observacion(intentos=5):
     return []
 
 
-def generar_grafico(idema, nombre_estacion, lecturas):
-    lecturas_estacion = [l for l in lecturas if l.get("idema") == idema]
-    lecturas_estacion.sort(key=lambda x: x.get("fint", ""))
+def cargar_cache_observacion(idema):
+    ruta = RUTA_CACHE_OBSERVACION.format(idema=idema)
+    lecturas = {}
+    if os.path.exists(ruta):
+        with open(ruta, newline="", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                lecturas[row["fint"]] = float(row["ta"])
+    return lecturas
+
+
+def guardar_cache_observacion(idema, lecturas):
+    ruta = RUTA_CACHE_OBSERVACION.format(idema=idema)
+    with open(ruta, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["fint", "ta"])
+        for fint, ta in sorted(lecturas.items()):
+            writer.writerow([fint, ta])
+
+
+def purgar_antiguas(lecturas, horas=25):
+    limite = datetime.now(timezone.utc) - timedelta(hours=horas)
+    lecturas_filtradas = {}
+    for fint, ta in lecturas.items():
+        fecha_utc = datetime.strptime(fint.split("+")[0], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc)
+        if fecha_utc >= limite:
+            lecturas_filtradas[fint] = ta
+    return lecturas_filtradas
+
+
+def generar_grafico(idema, nombre_estacion, lecturas_nuevas):
+    # Combina lo que ya teníamos en caché con lo nuevo recibido de AEMET
+    cache = cargar_cache_observacion(idema)
+
+    lecturas_estacion = [l for l in lecturas_nuevas if l.get("idema") == idema]
+    for l in lecturas_estacion:
+        fint = l.get("fint")
+        ta = l.get("ta")
+        if fint and ta is not None:
+            cache[fint] = ta  # sobrescribe si ya existía, añade si es nueva
+
+    cache = purgar_antiguas(cache)
+    guardar_cache_observacion(idema, cache)
+
+    fints_ordenados = sorted(cache.keys())
 
     horas, temperaturas, textos = [], [], []
-    for l in lecturas_estacion:
-        fecha_raw = l.get("fint")
-        temp = l.get("ta")
-        if not fecha_raw or temp is None:
-            continue
-        fecha_limpia = fecha_raw.split("+")[0]
-        fecha_utc = datetime.strptime(fecha_limpia, "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc)
+    for fint in fints_ordenados:
+        temp = cache[fint]
+        fecha_utc = datetime.strptime(fint.split("+")[0], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc)
         fecha_local = fecha_utc.astimezone(ZoneInfo("Europe/Madrid"))
         horas.append(fecha_local)
         temperaturas.append(temp)
@@ -106,7 +148,7 @@ def generar_grafico(idema, nombre_estacion, lecturas):
         config={"responsive": True, "displayModeBar": False},
         default_width="100%", default_height="100%",
     )
-    print(f"Guardado como {nombre_archivo} ({len(horas)} lecturas)")
+    print(f"Guardado como {nombre_archivo} ({len(horas)} lecturas acumuladas)")
 
 
 if __name__ == "__main__":
