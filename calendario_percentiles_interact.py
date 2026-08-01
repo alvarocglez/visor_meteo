@@ -98,13 +98,11 @@ def generar_grafico(idema, nombre_estacion, campo="tmax"):
     ))
 
     fig.update_layout(
-        title=f"Percentil de temperatura {etiqueta_campo} diaria — {nombre_estacion} ({idema})<br>"
-              f"<sup>ventana ±{VENTANA_DIAS} días</sup>",
         xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
         yaxis=dict(showgrid=False, zeroline=False, autorange="reversed"),
         plot_bgcolor="white",
         autosize=True,
-        margin=dict(l=60, r=20, t=80, b=20),
+        margin=dict(l=60, r=20, t=20, b=20),
         hoverlabel=dict(
             bgcolor="#161f2b",
             bordercolor="#26313f",
