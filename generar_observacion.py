@@ -10,6 +10,7 @@ import time
 import requests
 from datetime import datetime, timezone
 import plotly.graph_objects as go
+from zoneinfo import ZoneInfo
 
 API_KEY = os.environ.get("AEMET_API_KEY")
 HEADERS = {"api_key": API_KEY}
@@ -65,9 +66,10 @@ def generar_grafico(idema, nombre_estacion, lecturas):
             continue
         fecha_limpia = fecha_raw.split("+")[0]
         fecha_utc = datetime.strptime(fecha_limpia, "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc)
-        horas.append(fecha_utc)
+        fecha_local = fecha_utc.astimezone(ZoneInfo("Europe/Madrid"))
+        horas.append(fecha_local)
         temperaturas.append(temp)
-        textos.append(f"<b>{fecha_utc.strftime('%H:%M')}</b><br>{temp:.1f}°C")
+        textos.append(f"<b>{fecha_local.strftime('%H:%M')}</b><br>{temp:.1f}°C")
 
     fig = go.Figure()
     fig.add_trace(go.Scatter(
