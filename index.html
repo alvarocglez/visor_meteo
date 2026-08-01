@@ -218,6 +218,12 @@
     <iframe id="img-linea" class="iframe-linea" title="Gráfico de líneas de percentiles"></iframe>
   </section>
 
+  <section class="grafica">
+    <h2>Últimas 24h</h2>
+    <p>Temperatura observada en tiempo casi real (datos horarios de AEMET).</p>
+    <iframe id="img-observacion" class="iframe-linea" title="Observación últimas 24h"></iframe>
+  </section>
+
   <footer>
     Datos: AEMET OpenData · Actualización diaria automática · Los valores climatológicos pueden tener unos días de retraso respecto a hoy.
   </footer>
@@ -235,11 +241,14 @@
 
   let campoActual = 'tmax';
 
+  const imgObservacion = document.getElementById('img-observacion');
+
   function actualizarImagenes(){
     const idema = selectEstacion.value;
     const marca = Date.now();
     imgCalendario.src = `graficas/calendario_percentiles_${campoActual}_${idema}.html?v=${marca}`;
     imgLinea.src = `graficas/linea_percentiles_${campoActual}_${idema}.html?v=${marca}`;
+    imgObservacion.src = `graficas/observacion_${idema}.html?v=${marca}`;
   }
 
   btnTmax.addEventListener('click', () => {
