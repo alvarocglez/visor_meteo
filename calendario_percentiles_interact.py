@@ -120,6 +120,8 @@ def generar_grafico(idema, nombre_estacion, campo="tmax"):
         include_plotlyjs="cdn",
         full_html=True,
         config={"responsive": True},
+        default_width="100%",
+        default_height="100%",
     )
     print(f"Guardado como {nombre_archivo}")
 
