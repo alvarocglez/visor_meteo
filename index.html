@@ -150,6 +150,28 @@
     margin-bottom: 24px;
   }
 
+  .resumen-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px;
+  }
+
+  .resumen-item{
+    text-align: center;
+  }
+
+  .resumen-item .valor{
+    font-family: var(--display);
+    font-size: 28px;
+    font-weight: 600;
+  }
+
+  .resumen-item .etiqueta{
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
   .grafica h2{
     font-family: var(--display);
     font-weight: 600;
@@ -233,6 +255,11 @@
   </div>
 
   <div id="panel-observacion" class="panel">
+    <section class="grafica resumen">
+      <div class="resumen-grid" id="resumen-grid">
+        <p>Cargando resumen...</p>
+      </div>
+    </section>
     <section class="grafica">
       <h2>Últimas 24 horas — Temperatura</h2>
       <p>Temperatura observada en tiempo casi real (datos horarios de AEMET).</p>
@@ -281,6 +308,43 @@
     document.getElementById('img-observacion-prec').src = `graficas/observacion_prec_${idema}.html?v=${marca}`;
   }
 
+  async function actualizarResumen(){
+    const idema = selectEstacion.value;
+    const marca = Date.now();
+    try{
+      const res = await fetch(`graficas/resumen_${idema}.json?v=${marca}`);
+      const r = await res.json();
+      document.getElementById('resumen-grid').innerHTML = `
+        <div class="resumen-item">
+          <div class="valor">${r.temp_actual?.toFixed(1) ?? '—'}°C</div>
+          <div class="etiqueta">Actual (${r.hora_actualizacion})</div>
+        </div>
+        <div class="resumen-item">
+          <div class="valor">${r.temp_max_24h?.toFixed(1) ?? '—'}° / ${r.temp_min_24h?.toFixed(1) ?? '—'}°</div>
+          <div class="etiqueta">Máx / Mín 24h</div>
+        </div>
+        <div class="resumen-item">
+          <div class="valor">${r.prec_24h ?? '—'} mm</div>
+          <div class="etiqueta">Precipitación 24h</div>
+        </div>
+        <div class="resumen-item">
+          <div class="valor">${r.humedad_actual?.toFixed(0) ?? '—'}%</div>
+          <div class="etiqueta">Humedad</div>
+        </div>
+        <div class="resumen-item">
+          <div class="valor">${r.viento_velocidad?.toFixed(1) ?? '—'} m/s ${r.viento_direccion}</div>
+          <div class="etiqueta">Viento</div>
+        </div>
+        <div class="resumen-item">
+          <div class="valor">${r.presion_nmar?.toFixed(0) ?? '—'} hPa</div>
+          <div class="etiqueta">Presión (nivel mar)</div>
+        </div>
+      `;
+    } catch(e){
+      document.getElementById('resumen-grid').innerHTML = '<p>No se pudo cargar el resumen.</p>';
+    }
+  }
+
   btnTmax.addEventListener('click', () => {
     campoActual = 'tmax';
     btnTmax.classList.add('activo');
@@ -298,6 +362,7 @@
   selectEstacion.addEventListener('change', () => {
     actualizarClimatologia();
     actualizarObservacion();
+    actualizarResumen();
   });
 
   tabs.forEach(tab => {
@@ -312,11 +377,14 @@
         panelClimatologia.hidden = true;
         panelObservacion.hidden = false;
         actualizarObservacion();
+        actualizarResumen();
       }
     });
   });
 
-  actualizarObservacion(); // carga inicial (observación es la pestaña activa por defecto)
+  actualizarObservacion();
+  actualizarResumen();
+   // carga inicial (observación es la pestaña activa por defecto)
 </script>
 
 </body>

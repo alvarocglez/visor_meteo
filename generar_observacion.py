@@ -25,6 +25,8 @@ RUTA_CACHE_OBSERVACION = "cache_observacion_{idema}.csv"
 
 COLOR_LINEA = "rgb(153,60,29)"
 
+CAMPOS_OBSERVACION = ["ta", "prec", "hr", "vv", "dv", "pres_nmar"]
+
 
 def pedir_observacion(intentos=5):
     for intento in range(intentos):
@@ -68,9 +70,11 @@ def cargar_cache_observacion(idema):
         with open(ruta, newline="", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                ta = float(row["ta"]) if row.get("ta") not in ("", None) else None
-                prec = float(row["prec"]) if row.get("prec") not in ("", None) else None
-                lecturas[row["fint"]] = {"ta": ta, "prec": prec}
+                fila = {}
+                for campo in CAMPOS_OBSERVACION:
+                    valor = row.get(campo, "")
+                    fila[campo] = float(valor) if valor not in ("", None) else None
+                lecturas[row["fint"]] = fila
     return lecturas
 
 
@@ -78,9 +82,9 @@ def guardar_cache_observacion(idema, lecturas):
     ruta = RUTA_CACHE_OBSERVACION.format(idema=idema)
     with open(ruta, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerow(["fint", "ta", "prec"])
+        writer.writerow(["fint"] + CAMPOS_OBSERVACION)
         for fint, fila in sorted(lecturas.items()):
-            writer.writerow([fint, fila.get("ta", ""), fila.get("prec", "")])
+            writer.writerow([fint] + [fila.get(c, "") for c in CAMPOS_OBSERVACION])
 
 
 def purgar_antiguas(lecturas, horas=25):
@@ -99,10 +103,8 @@ def generar_grafico(idema, nombre_estacion, lecturas_nuevas):
     lecturas_estacion = [l for l in lecturas_nuevas if l.get("idema") == idema]
     for l in lecturas_estacion:
         fint = l.get("fint")
-        ta = l.get("ta")
-        prec = l.get("prec")
         if fint:
-            cache[fint] = {"ta": ta, "prec": prec}
+            cache[fint] = {campo: l.get(campo) for campo in CAMPOS_OBSERVACION}
 
     cache = purgar_antiguas(cache)
     guardar_cache_observacion(idema, cache)
@@ -169,6 +171,44 @@ def generar_grafico(idema, nombre_estacion, lecturas_nuevas):
     fig_prec.write_html(f"graficas/observacion_prec_{idema}.html", **config_comun)
 
     print(f"Guardado observacion_{idema}.html y observacion_prec_{idema}.html ({len(horas)} lecturas acumuladas)")
+
+def direccion_texto(grados):
+    if grados is None:
+        return "—"
+    direcciones = ["N", "NE", "E", "SE", "S", "SO", "O", "NO"]
+    idx = round(grados / 45) % 8
+    return direcciones[idx]
+
+
+def generar_resumen(idema, cache):
+    fints_ordenados = sorted(cache.keys())
+    if not fints_ordenados:
+        return
+
+    ultimo_fint = fints_ordenados[-1]
+    ultima_fila = cache[ultimo_fint]
+    fecha_utc = datetime.strptime(ultimo_fint.split("+")[0], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc)
+    fecha_local = fecha_utc.astimezone(ZoneInfo("Europe/Madrid"))
+
+    temperaturas = [f["ta"] for f in cache.values() if f.get("ta") is not None]
+    precipitaciones = [f["prec"] for f in cache.values() if f.get("prec") is not None]
+
+    resumen = {
+        "hora_actualizacion": fecha_local.strftime("%H:%M"),
+        "temp_actual": ultima_fila.get("ta"),
+        "temp_max_24h": max(temperaturas) if temperaturas else None,
+        "temp_min_24h": min(temperaturas) if temperaturas else None,
+        "prec_24h": round(sum(precipitaciones), 1) if precipitaciones else 0,
+        "humedad_actual": ultima_fila.get("hr"),
+        "viento_velocidad": ultima_fila.get("vv"),
+        "viento_direccion": direccion_texto(ultima_fila.get("dv")),
+        "presion_nmar": ultima_fila.get("pres_nmar"),
+    }
+
+    os.makedirs("graficas", exist_ok=True)
+    with open(f"graficas/resumen_{idema}.json", "w", encoding="utf-8") as f:
+        json.dump(resumen, f, ensure_ascii=False, indent=2)
+    print(f"Guardado resumen_{idema}.json")
 
 if __name__ == "__main__":
     with open("estaciones.json", encoding="utf-8") as f:
