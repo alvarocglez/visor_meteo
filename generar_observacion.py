@@ -109,6 +109,10 @@ def generar_grafico(idema, nombre_estacion, lecturas_nuevas):
     cache = purgar_antiguas(cache)
     guardar_cache_observacion(idema, cache)
 
+    cache = purgar_antiguas(cache)
+    guardar_cache_observacion(idema, cache)
+    generar_resumen(idema, cache)
+
     fints_ordenados = sorted(cache.keys())
 
     horas, temperaturas, precipitaciones, textos_temp, textos_prec = [], [], [], [], []
@@ -130,7 +134,7 @@ def generar_grafico(idema, nombre_estacion, lecturas_nuevas):
     fig_temp = go.Figure()
     fig_temp.add_trace(go.Scatter(
         x=horas, y=temperaturas, mode="lines+markers",
-        line=dict(color=COLOR_LINEA, width=2.2, shape="spline", smoothing=0.5),
+        line=dict(color=COLOR_LINEA, width=2.2, shape="spline"),
         marker=dict(size=5),
         text=textos_temp, hoverinfo="text",
     ))
