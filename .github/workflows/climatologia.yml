@@ -2,7 +2,7 @@ name: Actualizar datos
 
 on:
   schedule:
-    - cron: "0 6 * * *"   # cada día a las 6:00 UTC
+    - cron: "0 */3 * * *"   # cada día a las 6:00 UTC
   workflow_dispatch:
 
 jobs:

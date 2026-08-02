@@ -1,6 +1,8 @@
 name: Generar gráficas
 
 on:
+  schedule:
+    - cron: "20 */3 * * *"   # cada día a las 6:00 UTC
   workflow_dispatch:
 
 jobs:
