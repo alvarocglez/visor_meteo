@@ -149,17 +149,23 @@ def _tramos_de_seis_meses(inicio, fin):
         cursor = tramo_fin + timedelta(days=1)
 
 
-def descargar_historico(idema, anios=ANIOS_HISTORICOS):
-    """Descarga ~`anios` años de histórico de una estación, en tramos de 6 meses."""
+def descargar_historico(idema, primer_anio=None, anios=ANIOS_HISTORICOS):
+    """Descarga histórico de una estación, en tramos de 6 meses.
+    Si se indica primer_anio, descarga desde ese año hasta el año pasado.
+    Si no, usa los últimos `anios` años (comportamiento anterior)."""
     hoy = date.today()
-    fin = date(hoy.year - 1, 12, 31)  # hasta el año pasado completo
-    inicio_total = date(fin.year - anios + 1, 1, 1)
+    fin = date(hoy.year - 1, 12, 31)
+
+    if primer_anio:
+        inicio_total = date(primer_anio, 1, 1)
+    else:
+        inicio_total = date(fin.year - anios + 1, 1, 1)
 
     registros = []
     for tramo_inicio, tramo_fin in _tramos_de_seis_meses(inicio_total, fin):
         print(f"Descargando histórico {tramo_inicio} a {tramo_fin}...")
         registros += pedir_datos(idema, tramo_inicio.isoformat(), tramo_fin.isoformat())
-        time.sleep(1.5)  # AEMET limita peticiones por minuto
+        time.sleep(1.5)
     return registros
 
 
@@ -200,15 +206,15 @@ def actualizar_cache_anio_actual(idema):
     return actual_tmax
 
 
-def obtener_historico(idema, forzar_redescarga=False):
-    """Devuelve el histórico de una estación como {date: tmax}, usando caché si existe."""
+def obtener_historico(idema, primer_anio=None, forzar_redescarga=False):
+    """Devuelve el histórico de una estación como {date: {campo: valor}}, usando caché si existe."""
     ruta = ruta_cache_historico(idema)
     if os.path.exists(ruta) and not forzar_redescarga:
         return cargar_cache(ruta)
 
-    registros = descargar_historico(idema)
-    historico_tmax = parsear_registros(registros)
-    print(f"[{idema}] Registros históricos válidos: {len(historico_tmax)}")
-    if historico_tmax:
-        guardar_cache(historico_tmax, ruta)
-    return historico_tmax
+    registros = descargar_historico(idema, primer_anio=primer_anio)
+    historico = parsear_registros(registros)
+    print(f"[{idema}] Registros históricos válidos: {len(historico)}")
+    if historico:
+        guardar_cache(historico, ruta)
+    return historico

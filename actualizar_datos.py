@@ -6,5 +6,5 @@ with open("estaciones.json", encoding="utf-8") as f:
 
 for idema, info in estaciones.items():
     print(f"\n=== Actualizando {info['nombre']} ({idema}) ===")
-    obtener_historico(idema)
+    obtener_historico(idema, primer_anio=info.get("primer_anio"))
     actualizar_cache_anio_actual(idema)

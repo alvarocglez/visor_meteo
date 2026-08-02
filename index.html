@@ -166,10 +166,16 @@
     font-weight: 600;
   }
 
+  .resumen-item .valor-color{
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 8px;
+  }
+
   .resumen-item .etiqueta{
     font-size: 13px;
     color: var(--text-muted);
-    margin-top: 4px;
+    margin-top: 8px;
   }
 
   .grafica h2{
@@ -224,6 +230,9 @@
   <div class="selector-estacion">
     <label for="select-estacion">Estación</label>
     <select id="select-estacion">
+      <option value="2517A" data-nombre="Fuente el Sol">Fuente el Sol (2517A)</option>
+      <option value="2503B" data-nombre="Olmedo">Olmedo (2503B)</option>
+      <option value="2507Y" data-nombre="Rueda">Rueda (2507Y)</option>
       <option value="2422" data-nombre="Valladolid">Valladolid (2422)</option>
     </select>
   </div>
@@ -308,6 +317,55 @@
     document.getElementById('img-observacion-prec').src = `graficas/observacion_prec_${idema}.html?v=${marca}`;
   }
 
+  function colorPorTemperatura(temp){
+    if (temp === null || temp === undefined) return '#e4e4e0';
+
+    const hexToRgb = (hex) => {
+      const n = parseInt(hex.slice(1), 16);
+      return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    };
+
+    const stops = [
+      [-10, hexToRgb('#377dcc')],
+      [-5,  hexToRgb('#52b3d9')],
+      [-1,  hexToRgb('#95d2de')],
+      [0,   hexToRgb('#11d174')],
+      [2,   hexToRgb('#0ec953')],
+      [5,   hexToRgb('#0cb048')],
+      [7,   hexToRgb('#1ca372')],
+      [10,  hexToRgb('#096327')],
+      [15,  hexToRgb('#71ba36')],
+      [17,  hexToRgb('#a7e340')],
+      [19,  hexToRgb('#c5db97')],
+      [20,  hexToRgb('#e3dc14')],
+      [25,  hexToRgb('#deb71d')],
+      [30,  hexToRgb('#d95d0b')],
+      [35,  hexToRgb('#d40804')],
+      [38,  hexToRgb('#cc1b56')],
+      [40,  hexToRgb('#cc18a2')],
+      [42,  hexToRgb('#b31476')],
+      [45,  hexToRgb('#960c4a')],
+    ];
+
+    if (temp <= stops[0][0]) return `rgb(${stops[0][1].join(',')})`;
+    if (temp >= stops[stops.length - 1][0]) return `rgb(${stops[stops.length - 1][1].join(',')})`;
+
+    let a = stops[0], b = stops[stops.length - 1];
+    for (let i = 0; i < stops.length - 1; i++){
+      if (temp >= stops[i][0] && temp <= stops[i+1][0]){
+        a = stops[i]; b = stops[i+1]; break;
+      }
+    }
+    const t = (temp - a[0]) / (b[0] - a[0] || 1);
+    const c = a[1].map((v, i) => Math.round(v + (b[1][i] - v) * t));
+    return `rgb(${c[0]},${c[1]},${c[2]})`;
+  }
+
+  function colorTexto(temp){
+    if (temp === null || temp === undefined) return 'var(--text)';
+    return (temp >= 15 && temp <= 25) ? '#1b2128' : '#ffffff';
+  }
+
   async function actualizarResumen(){
     const idema = selectEstacion.value;
     const marca = Date.now();
@@ -316,12 +374,16 @@
       const r = await res.json();
       document.getElementById('resumen-grid').innerHTML = `
         <div class="resumen-item">
-          <div class="valor">${r.temp_actual?.toFixed(1) ?? '—'}°C</div>
-          <div class="etiqueta">Actual (${r.hora_actualizacion})</div>
+          <div class="valor valor-color" style="background:${colorPorTemperatura(r.temp_actual)}; color:${colorTexto(r.temp_actual)}">${r.temp_actual?.toFixed(1) ?? '—'}°C</div>
+          <div class="etiqueta">Último dato (${r.hora_actualizacion})</div>
         </div>
         <div class="resumen-item">
-          <div class="valor">${r.temp_max_24h?.toFixed(1) ?? '—'}° / ${r.temp_min_24h?.toFixed(1) ?? '—'}°</div>
-          <div class="etiqueta">Máx / Mín 24h</div>
+          <div class="valor valor-color" style="background:${colorPorTemperatura(r.temp_max_24h)}; color:${colorTexto(r.temp_max_24h)}">${r.temp_max_24h?.toFixed(1) ?? '—'}°</div>
+          <div class="etiqueta">Máxima 24h</div>
+        </div>
+        <div class="resumen-item">
+          <div class="valor valor-color" style="background:${colorPorTemperatura(r.temp_min_24h)}; color:${colorTexto(r.temp_min_24h)}">${r.temp_min_24h?.toFixed(1) ?? '—'}°</div>
+          <div class="etiqueta">Mínima 24h</div>
         </div>
         <div class="resumen-item">
           <div class="valor">${r.prec_24h ?? '—'} mm</div>
