@@ -83,7 +83,7 @@ def generar_grafico(idema, nombre_estacion, campo="tmax"):
         y=MESES,
         text=texto_num,
         texttemplate="%{text}",
-        textfont=dict(size=13, family="Arial Black, sans-serif"),        customdata=texto_hover,
+        textfont=dict(size=11, family="Arial Black, sans-serif"),        customdata=texto_hover,
         hovertemplate="%{customdata}<extra></extra>",
         colorscale=[
             [0.0, "rgb(24,95,165)"],
@@ -98,8 +98,8 @@ def generar_grafico(idema, nombre_estacion, campo="tmax"):
     ))
 
     fig.update_layout(
-        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-        yaxis=dict(showgrid=False, zeroline=False, autorange="reversed", ticklabelstandoff=15, scaleanchor="x"),
+        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False, constrain="domain"),
+        yaxis=dict(showgrid=False, zeroline=False, autorange="reversed", ticklabelstandoff=15, scaleanchor="x", scaleratio=1, constrain="domain"),
         plot_bgcolor="white",
         autosize=True,
         dragmode=False,
