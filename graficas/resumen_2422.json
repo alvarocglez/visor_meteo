@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "hora_actualizacion": "18:00",
   "temp_actual": 32.1,
   "temp_max_24h": 32.6,
@@ -8,4 +9,15 @@
   "viento_velocidad": 3.1,
   "viento_direccion": "O",
   "presion_nmar": 1007.5
+=======
+  "hora_actualizacion": "17:00",
+  "temp_actual": 32.6,
+  "temp_max_24h": 32.6,
+  "temp_min_24h": 19.5,
+  "prec_24h": 0.0,
+  "humedad_actual": 17.0,
+  "viento_velocidad": 2.5,
+  "viento_direccion": "O",
+  "presion_nmar": 1007.4
+>>>>>>> 2affa7d37201a5566832b9b16317314ee3b1e525
 }
