@@ -134,10 +134,12 @@ def generar_grafico(idema, nombre_estacion, lecturas_nuevas):
     fig_temp = go.Figure()
     fig_temp.add_trace(go.Scatter(
         x=horas, y=temperaturas, mode="lines+markers",
-        line=dict(color=COLOR_LINEA, width=2.2, shape="spline", smoothing=0.5),
-        marker=dict(size=5),
+        line=dict(color=COLOR_LINEA, width=3.2, shape="spline", smoothing=0.5),
+        marker=dict(size=10),
         text=textos_temp, hoverinfo="text",
     ))
+    
+    
     fig_temp.update_layout(
         xaxis=dict(tickformat="%H:%M", showgrid=True, gridcolor="rgba(0,0,0,0.06)",
                     showline=True, linecolor="rgba(0,0,0,0.2)"),
