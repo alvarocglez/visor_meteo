@@ -18,7 +18,7 @@ jobs:
           python-version: "3.11"
 
       - name: Instalar dependencias
-        run: pip install requests plotly
+        run: pip install requests plotly python-dotenv
 
       - name: Generar observación
         env:

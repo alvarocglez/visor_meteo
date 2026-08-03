@@ -18,7 +18,7 @@ jobs:
           python-version: "3.11"
 
       - name: Instalar dependencias
-        run: pip install numpy matplotlib requests plotly
+        run: pip install numpy matplotlib requests plotly python-dotenv
 
       - name: Generar calendario de percentiles (interactivo)
         run: python calendario_percentiles_interact.py
