@@ -1,11 +1,11 @@
 {
-  "hora_actualizacion": "12:00",
-  "temp_actual": 23.6,
-  "temp_max_24h": 26.3,
+  "hora_actualizacion": "16:00",
+  "temp_actual": 28.9,
+  "temp_max_24h": 28.9,
   "temp_min_24h": 17.8,
   "prec_24h": 0.0,
-  "humedad_actual": 53.0,
-  "viento_velocidad": 3.5,
-  "viento_direccion": "SO",
+  "humedad_actual": 31.0,
+  "viento_velocidad": 6.3,
+  "viento_direccion": "O",
   "presion_nmar": null
 }
