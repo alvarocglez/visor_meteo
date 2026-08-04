@@ -2,7 +2,7 @@ name: Actualizar observación
 
 on:
   schedule:
-    - cron: "*/15 * * * *"   # cada hora, en el minuto 5
+    - cron: "7,27,47 * * * *"   # cada hora, en el minuto 5
   workflow_dispatch:
 
 jobs:
