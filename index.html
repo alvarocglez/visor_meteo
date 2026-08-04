@@ -68,6 +68,26 @@
     margin-bottom: 8px;
   }
 
+  .grafica-header{
+    margin-bottom: 10px;
+  }
+
+  .grafica-header h2{
+    margin: 0 0 8px;
+  }
+
+  .grafica-header .switch-campo.switch-campo--sm{
+    display: flex;
+    margin-left: auto;
+    width: fit-content;
+    padding: 2px;
+  }
+
+  .grafica-header .switch-campo--sm button{
+    padding: 2px 8px;
+    font-size: 10px;
+  }
+
   select{
     font-family: var(--body);
     font-size: 16px;
@@ -230,10 +250,10 @@
   <div class="selector-estacion">
     <label for="select-estacion">Estación</label>
     <select id="select-estacion">
+      <option value="2422" data-nombre="Valladolid">Valladolid (2422)</option>
       <option value="2517A" data-nombre="Fuente el Sol">Fuente el Sol (2517A)</option>
       <option value="2503B" data-nombre="Olmedo">Olmedo (2503B)</option>
       <option value="2507Y" data-nombre="Rueda">Rueda (2507Y)</option>
-      <option value="2422" data-nombre="Valladolid">Valladolid (2422)</option>
     </select>
   </div>
 
@@ -242,22 +262,28 @@
     <button class="tab" data-tab="climatologia">Climatología</button>
   </div>
 
-  
-
   <div id="panel-climatologia" class="panel" hidden>
-    <div class="switch-campo" role="group" aria-label="Variable a mostrar">
-      <button data-campo="tmax" class="activo">TMÁX</button>
-      <button data-campo="tmin">TMÍN</button>
-    </div>
 
     <section class="grafica">
-      <h2>Calendario de percentiles</h2>
+      <div class="grafica-header">
+        <h2>Calendario de percentiles — <span class="nombre-estacion-titulo">Valladolid</span></h2>
+        <div class="switch-campo switch-campo--sm" role="group" aria-label="Variable — calendario" data-grafico="calendario">
+          <button data-campo="tmax" class="activo">TMÁX</button>
+          <button data-campo="tmin">TMÍN</button>
+        </div>
+      </div>
       <p>Cada día del año, coloreado según el percentil de su temperatura respecto a la climatología histórica.</p>
       <iframe id="img-calendario" class="iframe-calendario" title="Calendario de percentiles"></iframe>
     </section>
 
     <section class="grafica">
-      <h2>Evolución frente a la climatología</h2>
+      <div class="grafica-header">
+        <h2>Evolución frente a la climatología — <span class="nombre-estacion-titulo">Valladolid</span></h2>
+        <div class="switch-campo switch-campo--sm" role="group" aria-label="Variable — evolución" data-grafico="linea">
+          <button data-campo="tmax" class="activo">TMÁX</button>
+          <button data-campo="tmin">TMÍN</button>
+        </div>
+      </div>
       <p>Temperatura real del año en curso sobre las bandas de percentil 10–90 y 25–75.</p>
       <iframe id="img-linea" class="iframe-linea" title="Gráfico de líneas de percentiles"></iframe>
     </section>
@@ -282,8 +308,6 @@
     </section>
   </div>
 
-  
-
   <footer>
     Datos: AEMET OpenData · Actualización diaria automática · Los valores climatológicos pueden tener unos días de retraso respecto a hoy.
   </footer>
@@ -291,8 +315,6 @@
 </div>
 
 <script>
-  const btnTmax = document.querySelector('button[data-campo="tmax"]');
-  const btnTmin = document.querySelector('button[data-campo="tmin"]');
   const imgCalendario = document.getElementById('img-calendario');
   const imgLinea = document.getElementById('img-linea');
   const imgObservacion = document.getElementById('img-observacion');
@@ -301,13 +323,24 @@
   const panelClimatologia = document.getElementById('panel-climatologia');
   const panelObservacion = document.getElementById('panel-observacion');
 
-  let campoActual = 'tmax';
+  let campoCalendario = 'tmax';
+  let campoLinea = 'tmax';
 
-  function actualizarClimatologia(){
+  function actualizarCalendario(){
     const idema = selectEstacion.value;
     const marca = Date.now();
-    imgCalendario.src = `graficas/calendario_percentiles_${campoActual}_${idema}.html?v=${marca}`;
-    imgLinea.src = `graficas/linea_percentiles_${campoActual}_${idema}.html?v=${marca}`;
+    imgCalendario.src = `graficas/calendario_percentiles_${campoCalendario}_${idema}.html?v=${marca}`;
+  }
+
+  function actualizarLinea(){
+    const idema = selectEstacion.value;
+    const marca = Date.now();
+    imgLinea.src = `graficas/linea_percentiles_${campoLinea}_${idema}.html?v=${marca}`;
+  }
+
+  function actualizarClimatologia(){
+    actualizarCalendario();
+    actualizarLinea();
   }
 
   function actualizarObservacion(){
@@ -315,6 +348,14 @@
     const marca = Date.now();
     imgObservacion.src = `graficas/observacion_${idema}.html?v=${marca}`;
     document.getElementById('img-observacion-prec').src = `graficas/observacion_prec_${idema}.html?v=${marca}`;
+  }
+
+  function actualizarNombreEstacionTitulo(){
+    const opcion = selectEstacion.options[selectEstacion.selectedIndex];
+    const nombre = opcion.dataset.nombre;
+    document.querySelectorAll('.nombre-estacion-titulo').forEach(el => {
+      el.textContent = nombre;
+    });
   }
 
   function colorPorTemperatura(temp){
@@ -407,21 +448,26 @@
     }
   }
 
-  btnTmax.addEventListener('click', () => {
-    campoActual = 'tmax';
-    btnTmax.classList.add('activo');
-    btnTmin.classList.remove('activo');
-    actualizarClimatologia();
-  });
+  document.querySelectorAll('.switch-campo--sm').forEach(switchEl => {
+    const grafico = switchEl.dataset.grafico;
+    switchEl.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        switchEl.querySelectorAll('button').forEach(b => b.classList.remove('activo'));
+        btn.classList.add('activo');
 
-  btnTmin.addEventListener('click', () => {
-    campoActual = 'tmin';
-    btnTmin.classList.add('activo');
-    btnTmax.classList.remove('activo');
-    actualizarClimatologia();
+        if (grafico === 'calendario') {
+          campoCalendario = btn.dataset.campo;
+          actualizarCalendario();
+        } else {
+          campoLinea = btn.dataset.campo;
+          actualizarLinea();
+        }
+      });
+    });
   });
 
   selectEstacion.addEventListener('change', () => {
+    actualizarNombreEstacionTitulo();
     actualizarClimatologia();
     actualizarObservacion();
     actualizarResumen();
@@ -445,9 +491,10 @@
     });
   });
 
+  // carga inicial (observación es la pestaña activa por defecto)
+  actualizarNombreEstacionTitulo();
   actualizarObservacion();
   actualizarResumen();
-   // carga inicial (observación es la pestaña activa por defecto)
 </script>
 
 </body>
