@@ -18,13 +18,13 @@ HEADERS = {"api_key": API_KEY}
 BASE_URL = "https://opendata.aemet.es/opendata/api/valores/climatologicos/diarios/datos"
 
 ESTACIONES_A_COMPROBAR = {
-    #"2517A": "Fuente el Sol",
-    #"2503B": "Olmedo",   # ajusta el idema si no es el correcto
-    "2422": "Valladolid",    # ajusta el idema si no es el correcto
+    "1223P": "Lena, Ronzón",
+    "2734D": "Astorga",   # ajusta el idema si no es el correcto
+    #"5612X": "Lora de Estepa",    # ajusta el idema si no es el correcto
 }
 
 # Años concretos que vamos a probar, de más antiguo a más reciente
-ANIOS_A_PROBAR = [1974]
+ANIOS_A_PROBAR = [2010]
 
 
 def hay_datos_en_anio(idema, anio):

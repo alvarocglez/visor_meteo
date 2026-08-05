@@ -219,8 +219,8 @@
     background: #fff;
   }
 
-  .iframe-calendario{ height: 520px; }
-  .iframe-linea{ height: 500px; }
+  .iframe-calendario{ aspect-ratio: 2.15 / 1; height: auto; }
+  .iframe-linea{ aspect-ratio: 2.3 / 1; height: auto; }
 
   footer{
     margin-top: 40px;
@@ -232,11 +232,7 @@
 
   footer a{ color: var(--cold); }
 
-  @media (max-width: 560px){
-    .wrap{ padding: 28px 16px 80px; }
-    .iframe-calendario{ height: 760px; }
-    .iframe-linea{ height: 380px; }
-  }
+  
 </style>
 </head>
 <body>
@@ -251,7 +247,10 @@
     <label for="select-estacion">Estación</label>
     <select id="select-estacion">
       <option value="2422" data-nombre="Valladolid">Valladolid (2422)</option>
+      <option value="2734D" data-nombre="Astorga">Astorga (2734D)</option>
       <option value="2517A" data-nombre="Fuente el Sol">Fuente el Sol (2517A)</option>
+      <option value="1223P" data-nombre="Lena, Ronzón">Lena, Ronzón (1223P)</option>
+      <option value="5612X" data-nombre="Lora de Estepa">Lora de Estepa (5612X)</option>
       <option value="2503B" data-nombre="Olmedo">Olmedo (2503B)</option>
       <option value="2507Y" data-nombre="Rueda">Rueda (2507Y)</option>
     </select>
@@ -490,6 +489,8 @@
       }
     });
   });
+
+  
 
   // carga inicial (observación es la pestaña activa por defecto)
   actualizarNombreEstacionTitulo();
