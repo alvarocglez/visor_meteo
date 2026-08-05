@@ -119,8 +119,8 @@ def generar_grafico(idema, nombre_estacion, campo="tmax"):
             )
 
     z_placeholder = [
-    [1 if (d < DIAS_EN_MES[m] and z[m][d] is None) else None for d in range(31)]
-    for m in range(12)
+        [1 if (d < DIAS_EN_MES[m] and z[m][d] is None) else None for d in range(31)]
+        for m in range(12)
     ]
 
     fig = go.Figure()
@@ -179,7 +179,7 @@ def generar_grafico(idema, nombre_estacion, campo="tmax"):
         ),
     )
 
-    # --- Tooltip que sigue al ratón ---
+    # --- Tooltip que sigue al ratón + tooltip propio + ajuste responsive ---
     # Se oculta la caja nativa de Plotly (queda anclada a la celda) y se monta
     # un div propio posicionado en cada mousemove con la posición del cursor.
     # customdata (texto_hover) se sigue usando: se lee desde el evento
@@ -261,6 +261,17 @@ def generar_grafico(idema, nombre_estacion, campo="tmax"):
 
         ajustarNumeros();
         window.addEventListener('resize', ajustarNumeros);
+
+        // Informa a la página padre (index.html) de la altura real del
+        // gráfico, para que el iframe se ajuste sin depender de un alto fijo.
+        function reportarAltura() {{
+            var alto = gd.getBoundingClientRect().height;
+            window.parent.postMessage({{tipo: 'alto-iframe', alto: alto}}, '*');
+        }}
+
+        window.addEventListener('resize', reportarAltura);
+        setTimeout(reportarAltura, 300);
+        gd.on('plotly_afterplot', reportarAltura);
     }})();
     """
 

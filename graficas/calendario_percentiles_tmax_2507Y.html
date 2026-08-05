@@ -78,6 +78,17 @@
 
         ajustarNumeros();
         window.addEventListener('resize', ajustarNumeros);
+
+        // Informa a la página padre (index.html) de la altura real del
+        // gráfico, para que el iframe se ajuste sin depender de un alto fijo.
+        function reportarAltura() {
+            var alto = gd.getBoundingClientRect().height;
+            window.parent.postMessage({tipo: 'alto-iframe', alto: alto}, '*');
+        }
+
+        window.addEventListener('resize', reportarAltura);
+        setTimeout(reportarAltura, 300);
+        gd.on('plotly_afterplot', reportarAltura);
     })();
     
                         })                };            </script>        </div>
