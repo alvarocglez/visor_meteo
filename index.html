@@ -101,6 +101,11 @@
     cursor: pointer;
   }
 
+  .select-variable{
+    max-width: 220px;
+    margin-bottom: 4px;
+  }
+
   .tabs{
     display: flex;
     width: 100%;
@@ -219,8 +224,8 @@
     background: #fff;
   }
 
-  .iframe-calendario{ aspect-ratio: 2.15 / 1; height: auto; }
-  .iframe-linea{ aspect-ratio: 2.3 / 1; height: auto; }
+  .iframe-calendario{ height: 520px; }
+  .iframe-linea{ height: 500px; }
 
   footer{
     margin-top: 40px;
@@ -232,7 +237,11 @@
 
   footer a{ color: var(--cold); }
 
-  
+  @media (max-width: 560px){
+    .wrap{ padding: 28px 16px 80px; }
+    .iframe-calendario{ height: 760px; }
+    .iframe-linea{ height: 380px; }
+  }
 </style>
 </head>
 <body>
@@ -294,16 +303,21 @@
         <p>Cargando resumen...</p>
       </div>
     </section>
-    <section class="grafica">
-      <h2>Últimas 24 horas — Temperatura</h2>
-      <p>Temperatura observada en tiempo casi real (datos horarios de AEMET).</p>
-      <iframe id="img-observacion" class="iframe-linea" title="Observación últimas 24h"></iframe>
-    </section>
+
+    <select id="select-variable-observacion" class="select-variable">
+          <option value="ta" data-nombre="Temperatura" data-unidad="°C">Temperatura</option>
+          <option value="prec" data-nombre="Precipitación" data-unidad="mm">Precipitación</option>
+          <option value="hr" data-nombre="Humedad" data-unidad="%">Humedad</option>
+          <option value="vv" data-nombre="Viento" data-unidad="m/s">Viento</option>
+          <option value="pres_nmar" data-nombre="Presión" data-unidad="hPa">Presión (nivel mar)</option>
+    </select>
 
     <section class="grafica">
-      <h2>Últimas 24 horas — Precipitación</h2>
-      <p>Precipitación acumulada por hora.</p>
-      <iframe id="img-observacion-prec" class="iframe-linea" title="Precipitación últimas 24h"></iframe>
+      <div class="grafica-header">
+        <h2 id="titulo-observacion">Últimas 24 horas — Temperatura</h2>
+      </div>
+      <p id="descripcion-observacion">Temperatura observada en tiempo casi real (datos horarios de AEMET).</p>
+      <iframe id="img-observacion" class="iframe-linea" title="Observación últimas 24h"></iframe>
     </section>
   </div>
 
@@ -318,12 +332,24 @@
   const imgLinea = document.getElementById('img-linea');
   const imgObservacion = document.getElementById('img-observacion');
   const selectEstacion = document.getElementById('select-estacion');
+  const selectVariableObservacion = document.getElementById('select-variable-observacion');
+  const tituloObservacion = document.getElementById('titulo-observacion');
+  const descripcionObservacion = document.getElementById('descripcion-observacion');
   const tabs = document.querySelectorAll('.tab');
   const panelClimatologia = document.getElementById('panel-climatologia');
   const panelObservacion = document.getElementById('panel-observacion');
 
   let campoCalendario = 'tmax';
   let campoLinea = 'tmax';
+  let campoObservacion = 'ta';
+
+  const DESCRIPCIONES_OBSERVACION = {
+    ta: 'Temperatura observada en tiempo casi real (datos horarios de AEMET).',
+    prec: 'Precipitación acumulada por hora.',
+    hr: 'Humedad relativa observada en tiempo casi real.',
+    vv: 'Velocidad del viento observada en tiempo casi real.',
+    pres_nmar: 'Presión atmosférica reducida a nivel del mar.',
+  };
 
   function actualizarCalendario(){
     const idema = selectEstacion.value;
@@ -345,8 +371,11 @@
   function actualizarObservacion(){
     const idema = selectEstacion.value;
     const marca = Date.now();
-    imgObservacion.src = `graficas/observacion_${idema}.html?v=${marca}`;
-    document.getElementById('img-observacion-prec').src = `graficas/observacion_prec_${idema}.html?v=${marca}`;
+    imgObservacion.src = `graficas/observacion_${campoObservacion}_${idema}.html?v=${marca}`;
+
+    const opcion = selectVariableObservacion.options[selectVariableObservacion.selectedIndex];
+    tituloObservacion.textContent = `Últimas 24 horas — ${opcion.dataset.nombre}`;
+    descripcionObservacion.textContent = DESCRIPCIONES_OBSERVACION[campoObservacion] || '';
   }
 
   function actualizarNombreEstacionTitulo(){
@@ -465,6 +494,11 @@
     });
   });
 
+  selectVariableObservacion.addEventListener('change', () => {
+    campoObservacion = selectVariableObservacion.value;
+    actualizarObservacion();
+  });
+
   selectEstacion.addEventListener('change', () => {
     actualizarNombreEstacionTitulo();
     actualizarClimatologia();
@@ -489,8 +523,6 @@
       }
     });
   });
-
-  
 
   // carga inicial (observación es la pestaña activa por defecto)
   actualizarNombreEstacionTitulo();
