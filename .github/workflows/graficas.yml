@@ -1,46 +1,37 @@
 name: Generar gráficas
-
 on:
   schedule:
     - cron: "20 */3 * * *"   # cada día a las 6:00 UTC
   workflow_dispatch:
-
 jobs:
   generar:
     runs-on: ubuntu-latest
     steps:
       - name: Descargar el repositorio
         uses: actions/checkout@v4
-
       - name: Configurar Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
       - name: Instalar dependencias
         run: pip install numpy matplotlib requests plotly python-dotenv
-
       - name: Generar calendario de percentiles (interactivo)
         run: python calendario_percentiles_interact.py
-
       - name: Generar calendario de percentiles (interactivo, tmin)
         run: python calendario_percentiles_interact.py --tmin
-
       - name: Generar gráfico de líneas (interactivo)
         run: python linea_percentiles_interact.py
-
       - name: Generar gráfico de líneas (interactivo, tmin)
         run: python linea_percentiles_interact.py --tmin
-
       - name: Guardar cambios en el repositorio
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add graficas/*.png graficas/*.html
+          git add graficas/calendario/*.html graficas/linea/*.html
           git stash --include-untracked
           git fetch origin main
           git reset --hard origin/main
           git stash pop
-          git add graficas/*.png graficas/*.html
+          git add graficas/calendario/*.html graficas/linea/*.html
           git commit -m "Regenerar gráficas" || echo "Sin cambios"
           git push
