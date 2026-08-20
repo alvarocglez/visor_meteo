@@ -24,12 +24,17 @@ ANIOS_HISTORICOS = 30  # años de climatología a usar (excluyendo el actual)
 CAMPOS_NUMERICOS = ["tmax", "tmin", "tmed", "prec", "velmedia", "racha",
                     "presMax", "presMin", "hrMedia", "sol"]
 
+# --- Rutas de caché, organizadas en subcarpetas por tipo ---
+CACHE_HISTORICO_DIR = "cache/historico"
+CACHE_ANIO_ACTUAL_DIR = "cache/anio_actual"
+
+
 def ruta_cache_historico(idema):
-    return f"cache_historico_{idema}.csv"
+    return f"{CACHE_HISTORICO_DIR}/{idema}.csv"
 
 
 def ruta_cache_anio_actual(idema):
-    return f"cache_anio_actual_{idema}_{date.today().year}.csv"
+    return f"{CACHE_ANIO_ACTUAL_DIR}/{idema}_{date.today().year}.csv"
 
 
 def pedir_datos(idema, fecha_ini, fecha_fin, intentos=5):
@@ -113,6 +118,7 @@ def parsear_registros(registros):
 
 
 def guardar_cache(datos_dict, ruta):
+    os.makedirs(os.path.dirname(ruta), exist_ok=True)
     with open(ruta, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["fecha"] + CAMPOS_NUMERICOS)

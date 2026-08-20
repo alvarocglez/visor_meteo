@@ -1,7 +1,11 @@
 """
-Gráfico interactivo (Plotly) de la evolución de temperatura de las últimas
-24h, usando el endpoint de observación convencional de AEMET (datos horarios,
-casi en tiempo real - a diferencia de la climatología, que tiene días de retraso).
+Gráfico interactivo (Plotly) de la evolución de variables meteorológicas de
+las últimas 24h, usando el endpoint de observación convencional de AEMET
+(datos horarios, casi en tiempo real - a diferencia de la climatología, que
+tiene días de retraso).
+
+Genera un HTML independiente por variable (graficas/observacion/<var>_<idema>.html)
+para poder seleccionarlas desde un desplegable en la web sin recargar todo.
 """
 
 import os
@@ -9,10 +13,9 @@ import json
 import csv
 import time
 import requests
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import plotly.graph_objects as go
 from zoneinfo import ZoneInfo
-from datetime import timedelta
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -21,11 +24,39 @@ API_KEY = os.environ.get("AEMET_API_KEY")
 HEADERS = {"api_key": API_KEY}
 URL_OBSERVACION = "https://opendata.aemet.es/opendata/api/observacion/convencional/todas"
 
-RUTA_CACHE_OBSERVACION = "cache_observacion_{idema}.csv"
+# --- Rutas de caché y salida, organizadas en subcarpetas ---
+CACHE_OBSERVACION_DIR = "cache/observacion"
+GRAFICAS_OBSERVACION_DIR = "graficas/observacion"
+GRAFICAS_RESUMENES_DIR = "graficas/resumenes"
 
-COLOR_LINEA = "rgb(153,60,29)"
+RUTA_CACHE_OBSERVACION = CACHE_OBSERVACION_DIR + "/{idema}.csv"
 
 CAMPOS_OBSERVACION = ["ta", "prec", "hr", "vv", "dv", "pres_nmar"]
+
+# Configuración de cada variable graficable: tipo de gráfico, color, título de
+# eje, formato del valor en el tooltip y cómo transformar el dato bruto.
+VARIABLES = {
+    "ta": dict(
+        tipo="linea", color="rgb(153,60,29)", eje="Temperatura (°C)",
+        fmt=lambda v: f"{v:.1f}°C",
+    ),
+    "prec": dict(
+        tipo="barras", color="rgb(91,155,216)", eje="Precipitación (mm)",
+        fmt=lambda v: f"{v:.1f} mm", transformar=lambda v: v or 0,
+    ),
+    "hr": dict(
+        tipo="linea", color="rgb(37,99,168)", eje="Humedad (%)",
+        fmt=lambda v: f"{v:.0f}%",
+    ),
+    "vv": dict(
+        tipo="linea", color="rgb(15,120,90)", eje="Viento (m/s)",
+        fmt=lambda v: f"{v:.1f} m/s",
+    ),
+    "pres_nmar": dict(
+        tipo="linea", color="rgb(110,80,160)", eje="Presión (hPa, nivel del mar)",
+        fmt=lambda v: f"{v:.0f} hPa",
+    ),
+}
 
 
 def pedir_observacion(intentos=5):
@@ -80,6 +111,7 @@ def cargar_cache_observacion(idema):
 
 def guardar_cache_observacion(idema, lecturas):
     ruta = RUTA_CACHE_OBSERVACION.format(idema=idema)
+    os.makedirs(os.path.dirname(ruta), exist_ok=True)
     with open(ruta, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["fint"] + CAMPOS_OBSERVACION)
@@ -90,11 +122,58 @@ def guardar_cache_observacion(idema, lecturas):
 def purgar_antiguas(lecturas, horas=25):
     limite = datetime.now(timezone.utc) - timedelta(hours=horas)
     lecturas_filtradas = {}
-    for fint, ta in lecturas.items():
+    for fint, fila in lecturas.items():
         fecha_utc = datetime.strptime(fint.split("+")[0], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc)
         if fecha_utc >= limite:
-            lecturas_filtradas[fint] = ta
+            lecturas_filtradas[fint] = fila
     return lecturas_filtradas
+
+
+def _config_comun():
+    return dict(
+        include_plotlyjs="cdn", full_html=True,
+        config={"responsive": True, "displayModeBar": False, "scrollZoom": False},
+        default_width="100%", default_height="100%",
+    )
+
+
+def _generar_html_variable(idema, campo, cfg, horas, valores):
+    transformar = cfg.get("transformar", lambda v: v)
+    valores_t = [transformar(v) for v in valores]
+    textos = [
+        f"<b>{h.strftime('%H:%M')}</b><br>{cfg['fmt'](v)}" if v is not None else ""
+        for h, v in zip(horas, valores_t)
+    ]
+
+    fig = go.Figure()
+    if cfg["tipo"] == "linea":
+        fig.add_trace(go.Scatter(
+            x=horas, y=valores_t, mode="lines+markers",
+            line=dict(color=cfg["color"], width=3.2, shape="spline", smoothing=0.5),
+            marker=dict(size=10),
+            text=textos, hoverinfo="text",
+        ))
+    else:  # barras
+        fig.add_trace(go.Bar(
+            x=horas, y=valores_t,
+            marker=dict(color=cfg["color"]),
+            text=textos, hoverinfo="text",
+        ))
+
+    fig.update_layout(
+        xaxis=dict(tickformat="%H:%M", showgrid=True, gridcolor="rgba(0,0,0,0.06)",
+                    showline=True, linecolor="rgba(0,0,0,0.2)"),
+        yaxis=dict(title=cfg["eje"], showgrid=True, gridcolor="rgba(0,0,0,0.06)"),
+        plot_bgcolor="white", hovermode="x unified",
+        hoverlabel=dict(bgcolor="#161f2b", bordercolor="#26313f",
+                         font=dict(color="white", size=13, family="IBM Plex Mono, monospace")),
+        margin=dict(l=60, r=20, t=20, b=40), autosize=True, dragmode=False,
+    )
+
+    os.makedirs(GRAFICAS_OBSERVACION_DIR, exist_ok=True)
+    nombre_archivo = f"{GRAFICAS_OBSERVACION_DIR}/{campo}_{idema}.html"
+    fig.write_html(nombre_archivo, **_config_comun())
+    return nombre_archivo
 
 
 def generar_grafico(idema, nombre_estacion, lecturas_nuevas):
@@ -108,75 +187,24 @@ def generar_grafico(idema, nombre_estacion, lecturas_nuevas):
 
     cache = purgar_antiguas(cache)
     guardar_cache_observacion(idema, cache)
-
-    cache = purgar_antiguas(cache)
-    guardar_cache_observacion(idema, cache)
     generar_resumen(idema, cache)
 
     fints_ordenados = sorted(cache.keys())
 
-    horas, temperaturas, precipitaciones, textos_temp, textos_prec = [], [], [], [], []
+    horas = []
     for fint in fints_ordenados:
-        fila = cache[fint]
         fecha_utc = datetime.strptime(fint.split("+")[0], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc)
-        fecha_local = fecha_utc.astimezone(ZoneInfo("Europe/Madrid"))
-        horas.append(fecha_local)
+        horas.append(fecha_utc.astimezone(ZoneInfo("Europe/Madrid")))
 
-        ta = fila.get("ta")
-        temperaturas.append(ta)
-        textos_temp.append(f"<b>{fecha_local.strftime('%H:%M')}</b><br>{ta:.1f}°C" if ta is not None else "")
+    archivos_generados = []
+    for campo, cfg in VARIABLES.items():
+        valores = [cache[fint].get(campo) for fint in fints_ordenados]
+        archivo = _generar_html_variable(idema, campo, cfg, horas, valores)
+        archivos_generados.append(archivo)
 
-        prec = fila.get("prec") or 0
-        precipitaciones.append(prec)
-        textos_prec.append(f"<b>{fecha_local.strftime('%H:%M')}</b><br>{prec:.1f} mm")
+    print(f"Guardados {len(archivos_generados)} gráficos de {nombre_estacion} ({idema}): "
+          f"{', '.join(archivos_generados)} — {len(horas)} lecturas acumuladas")
 
-    # --- Gráfico de temperatura ---
-    fig_temp = go.Figure()
-    fig_temp.add_trace(go.Scatter(
-        x=horas, y=temperaturas, mode="lines+markers",
-        line=dict(color=COLOR_LINEA, width=3.2, shape="spline", smoothing=0.5),
-        marker=dict(size=10),
-        text=textos_temp, hoverinfo="text",
-    ))
-    
-    
-    fig_temp.update_layout(
-        xaxis=dict(tickformat="%H:%M", showgrid=True, gridcolor="rgba(0,0,0,0.06)",
-                    showline=True, linecolor="rgba(0,0,0,0.2)"),
-        yaxis=dict(title="Temperatura (°C)", showgrid=True, gridcolor="rgba(0,0,0,0.06)"),
-        plot_bgcolor="white", hovermode="x unified",
-        hoverlabel=dict(bgcolor="#161f2b", bordercolor="#26313f",
-                         font=dict(color="white", size=13, family="IBM Plex Mono, monospace")),
-        margin=dict(l=60, r=20, t=20, b=40), autosize=True, dragmode=False,
-    )
-
-    # --- Gráfico de precipitación (barras) ---
-    fig_prec = go.Figure()
-    fig_prec.add_trace(go.Bar(
-        x=horas, y=precipitaciones,
-        marker=dict(color="rgb(91,155,216)"),
-        text=textos_prec, hoverinfo="text",
-    ))
-    fig_prec.update_layout(
-        xaxis=dict(tickformat="%H:%M", showgrid=True, gridcolor="rgba(0,0,0,0.06)",
-                    showline=True, linecolor="rgba(0,0,0,0.2)"),
-        yaxis=dict(title="Precipitación (mm)", showgrid=True, gridcolor="rgba(0,0,0,0.06)"),
-        plot_bgcolor="white", hovermode="x unified",
-        hoverlabel=dict(bgcolor="#161f2b", bordercolor="#26313f",
-                         font=dict(color="white", size=13, family="IBM Plex Mono, monospace")),
-        margin=dict(l=60, r=20, t=20, b=40), autosize=True, dragmode=False,
-    )
-
-    os.makedirs("graficas", exist_ok=True)
-
-    config_comun = dict(include_plotlyjs="cdn", full_html=True,
-                         config={"responsive": True, "displayModeBar": False, "scrollZoom": False},
-                         default_width="100%", default_height="100%")
-
-    fig_temp.write_html(f"graficas/observacion_{idema}.html", **config_comun)
-    fig_prec.write_html(f"graficas/observacion_prec_{idema}.html", **config_comun)
-
-    print(f"Guardado observacion_{idema}.html y observacion_prec_{idema}.html ({len(horas)} lecturas acumuladas)")
 
 def direccion_texto(grados):
     if grados is None:
@@ -211,10 +239,11 @@ def generar_resumen(idema, cache):
         "presion_nmar": ultima_fila.get("pres_nmar"),
     }
 
-    os.makedirs("graficas", exist_ok=True)
-    with open(f"graficas/resumen_{idema}.json", "w", encoding="utf-8") as f:
+    os.makedirs(GRAFICAS_RESUMENES_DIR, exist_ok=True)
+    with open(f"{GRAFICAS_RESUMENES_DIR}/{idema}.json", "w", encoding="utf-8") as f:
         json.dump(resumen, f, ensure_ascii=False, indent=2)
     print(f"Guardado resumen_{idema}.json")
+
 
 if __name__ == "__main__":
     with open("estaciones.json", encoding="utf-8") as f:

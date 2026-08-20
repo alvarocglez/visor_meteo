@@ -354,13 +354,13 @@
   function actualizarCalendario(){
     const idema = selectEstacion.value;
     const marca = Date.now();
-    imgCalendario.src = `graficas/calendario_percentiles_${campoCalendario}_${idema}.html?v=${marca}`;
+    imgCalendario.src = `graficas/calendario/${campoCalendario}_${idema}.html?v=${marca}`;
   }
 
   function actualizarLinea(){
     const idema = selectEstacion.value;
     const marca = Date.now();
-    imgLinea.src = `graficas/linea_percentiles_${campoLinea}_${idema}.html?v=${marca}`;
+    imgLinea.src = `graficas/linea/${campoLinea}_${idema}.html?v=${marca}`;
   }
 
   function actualizarClimatologia(){
@@ -371,7 +371,7 @@
   function actualizarObservacion(){
     const idema = selectEstacion.value;
     const marca = Date.now();
-    imgObservacion.src = `graficas/observacion_${campoObservacion}_${idema}.html?v=${marca}`;
+    imgObservacion.src = `graficas/observacion/${campoObservacion}_${idema}.html?v=${marca}`;
 
     const opcion = selectVariableObservacion.options[selectVariableObservacion.selectedIndex];
     tituloObservacion.textContent = `Últimas 24 horas — ${opcion.dataset.nombre}`;
@@ -439,7 +439,7 @@
     const idema = selectEstacion.value;
     const marca = Date.now();
     try{
-      const res = await fetch(`graficas/resumen_${idema}.json?v=${marca}`);
+      const res = await fetch(`graficas/resumenes/${idema}.json?v=${marca}`);
       const r = await res.json();
       document.getElementById('resumen-grid').innerHTML = `
         <div class="resumen-item">

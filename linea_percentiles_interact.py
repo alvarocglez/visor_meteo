@@ -17,6 +17,8 @@ from climatologia import construir_muestras_por_dia, dia_del_anio_normalizado, v
 MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun",
          "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
 
+GRAFICAS_LINEA_DIR = "graficas/linea"
+
 # Misma paleta que el calendario: azul frío -> gris -> rojo cálido
 COLOR_BANDA_ANCHA = "rgba(91,155,216,0.18)"   # 10-90, azul muy suave
 COLOR_BANDA_ESTRECHA = "rgba(91,155,216,0.32)"  # 25-75, azul algo más intenso
@@ -132,8 +134,8 @@ def generar_grafico(idema, nombre_estacion, campo="tmax"):
         autosize=True,
     )
 
-    os.makedirs("graficas", exist_ok=True)
-    nombre_archivo = f"graficas/linea_percentiles_{campo}_{idema}.html"
+    os.makedirs(GRAFICAS_LINEA_DIR, exist_ok=True)
+    nombre_archivo = f"{GRAFICAS_LINEA_DIR}/{campo}_{idema}.html"
     fig.write_html(
         nombre_archivo,
         include_plotlyjs="cdn",

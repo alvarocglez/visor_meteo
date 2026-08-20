@@ -15,6 +15,8 @@ MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun",
          "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
 DIAS_EN_MES = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
+GRAFICAS_CALENDARIO_DIR = "graficas/calendario"
+
 
 def color_por_percentil(p):
     stops = [
@@ -268,8 +270,8 @@ def generar_grafico(idema, nombre_estacion, campo="tmax"):
     }})();
     """
     
-    os.makedirs("graficas", exist_ok=True)
-    nombre_archivo = f"graficas/calendario_percentiles_{campo}_{idema}.html"
+    os.makedirs(GRAFICAS_CALENDARIO_DIR, exist_ok=True)
+    nombre_archivo = f"{GRAFICAS_CALENDARIO_DIR}/{campo}_{idema}.html"
     fig.write_html(
         nombre_archivo,
         include_plotlyjs="cdn",
