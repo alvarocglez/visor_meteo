@@ -175,12 +175,6 @@
     margin-bottom: 24px;
   }
 
-  .resumen-grid{
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 16px;
-  }
-
   .resumen-item{
     text-align: center;
   }
@@ -193,8 +187,10 @@
 
   .resumen-item .valor-color{
     display: inline-block;
-    padding: 8px 16px;
+    padding: 6px 16px;
     border-radius: 8px;
+    border: 2px solid currentColor;
+    background: transparent !important;
   }
 
   .resumen-item .etiqueta{
@@ -202,6 +198,121 @@
     color: var(--text-muted);
     margin-top: 8px;
   }
+
+  /* --- Tarjeta "Tiempo actual" --- */
+  .ahora-card{
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .ahora-card-header{
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--panel-border);
+  }
+
+  .ahora-card-header h2{
+    margin: 0;
+    font-family: var(--body);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .ahora-card-header .hora-actual{
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+
+  #ahora-grid{
+    display: flex;
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  .ahora-izquierda{
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 24px;
+    flex: 1 1 260px;
+  }
+
+  .ahora-icono-bloque img{
+    width: 84px;
+    height: 63px;
+    flex-shrink: 0;
+  }
+
+  .ahora-temp .valor-grande{
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 44px;
+    line-height: 1;
+  }
+
+  .ahora-temp .valor-grande sup{
+    font-size: 22px;
+    font-weight: 500;
+  }
+
+  .ahora-temp .sensacion-linea{
+    font-size: 15px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .ahora-temp .descripcion-cielo{
+    font-size: 15px;
+    font-weight: 600;
+    margin-top: 8px;
+  }
+
+  .ahora-derecha{
+    flex: 1 1 220px;
+    border-left: 1px solid var(--panel-border);
+    padding: 8px 24px;
+  }
+
+  .ahora-derecha .fila{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--panel-border);
+    font-size: 14px;
+  }
+
+  .ahora-derecha .fila:last-child{
+    border-bottom: none;
+  }
+
+  .ahora-derecha .fila .etiqueta{
+    color: var(--text-muted);
+  }
+
+  .ahora-derecha .fila .valor{
+    font-weight: 600;
+  }
+
+  @media (max-width: 560px){
+    .ahora-derecha{
+      border-left: none;
+      border-top: 1px solid var(--panel-border);
+    }
+  }
+
+  /* --- Tarjeta "Resumen del día" --- */
+  #resumen-dia-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 14px;
+  }
+
 
   .grafica h2{
     font-family: var(--display);
@@ -298,9 +409,20 @@
   </div>
 
   <div id="panel-observacion" class="panel">
-    <section class="grafica resumen">
-      <div class="resumen-grid" id="resumen-grid">
-        <p>Cargando resumen...</p>
+    <section class="grafica ahora-card">
+      <div class="ahora-card-header">
+        <h2 id="titulo-ahora">Tiempo actual</h2>
+        <span class="hora-actual" id="hora-actual-header"></span>
+      </div>
+      <div id="ahora-grid">
+        <p style="padding:24px;">Cargando...</p>
+      </div>
+    </section>
+
+    <section class="grafica">
+      <h2>Resumen del día</h2>
+      <div id="resumen-dia-grid">
+        <p>Cargando...</p>
       </div>
     </section>
 
@@ -439,40 +561,68 @@
     const idema = selectEstacion.value;
     const marca = Date.now();
     try{
-      const res = await fetch(`graficas/resumenes/${idema}.json?v=${marca}`);
+      const [res, resPred] = await Promise.all([
+        fetch(`graficas/resumenes/${idema}.json?v=${marca}`),
+        fetch(`graficas/prediccion/${idema}.json?v=${marca}`).catch(() => null),
+      ]);
       const r = await res.json();
-      document.getElementById('resumen-grid').innerHTML = `
-        <div class="resumen-item">
-          <div class="valor valor-color" style="background:${colorPorTemperatura(r.temp_actual)}; color:${colorTexto(r.temp_actual)}">${r.temp_actual?.toFixed(1) ?? '—'}°C</div>
-          <div class="etiqueta">Último dato (${r.hora_actualizacion})</div>
+      let pred = null;
+      try{ pred = resPred && resPred.ok ? await resPred.json() : null; } catch(e){ pred = null; }
+
+      const ahora = new Date();
+      const fechaTexto = ahora.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+      const fechaCapitalizada = fechaTexto.charAt(0).toUpperCase() + fechaTexto.slice(1);
+      document.getElementById('hora-actual-header').textContent = `${fechaCapitalizada} · ${r.hora_actualizacion}`;
+
+      const iconoHtml = pred
+        ? `<div class="ahora-icono-bloque"><img src="https://cdn.jsdelivr.net/gh/Makin-Things/weather-icons@main/animated/${pred.icono}.svg" alt="${pred.descripcion}"></div>`
+        : '';
+
+      document.getElementById('ahora-grid').innerHTML = `
+        <div class="ahora-izquierda">
+          ${iconoHtml}
+          <div class="ahora-temp">
+            <div class="valor-grande" style="color:${colorPorTemperatura(r.temp_actual)}">${r.temp_actual?.toFixed(1) ?? '—'}<sup>°C</sup></div>
+            <div class="sensacion-linea">Sensación ${r.sensacion_termica?.toFixed(1) ?? '—'}°</div>
+            ${pred ? `<div class="descripcion-cielo">${pred.descripcion}</div>` : ''}
+          </div>
         </div>
-        <div class="resumen-item">
-          <div class="valor valor-color" style="background:${colorPorTemperatura(r.temp_max_24h)}; color:${colorTexto(r.temp_max_24h)}">${r.temp_max_24h?.toFixed(1) ?? '—'}°</div>
-          <div class="etiqueta">Máxima 24h</div>
-        </div>
-        <div class="resumen-item">
-          <div class="valor valor-color" style="background:${colorPorTemperatura(r.temp_min_24h)}; color:${colorTexto(r.temp_min_24h)}">${r.temp_min_24h?.toFixed(1) ?? '—'}°</div>
-          <div class="etiqueta">Mínima 24h</div>
-        </div>
-        <div class="resumen-item">
-          <div class="valor">${r.prec_24h ?? '—'} mm</div>
-          <div class="etiqueta">Precipitación 24h</div>
-        </div>
-        <div class="resumen-item">
-          <div class="valor">${r.humedad_actual?.toFixed(0) ?? '—'}%</div>
-          <div class="etiqueta">Humedad</div>
-        </div>
-        <div class="resumen-item">
-          <div class="valor">${r.viento_velocidad?.toFixed(1) ?? '—'} m/s ${r.viento_direccion}</div>
-          <div class="etiqueta">Viento</div>
-        </div>
-        <div class="resumen-item">
-          <div class="valor">${r.presion_nmar?.toFixed(0) ?? '—'} hPa</div>
-          <div class="etiqueta">Presión (nivel mar)</div>
+        <div class="ahora-derecha">
+          <div class="fila">
+            <span class="etiqueta">Viento</span>
+            <span class="valor">${r.viento_direccion} ${r.viento_velocidad?.toFixed(1) ?? '—'} m/s</span>
+          </div>
+          <div class="fila">
+            <span class="etiqueta">Humedad</span>
+            <span class="valor">${r.humedad_actual?.toFixed(0) ?? '—'}%</span>
+          </div>
+          <div class="fila">
+            <span class="etiqueta">Presión (nivel mar)</span>
+            <span class="valor">${r.presion_nmar?.toFixed(0) ?? '—'} hPa</span>
+          </div>
         </div>
       `;
+
+      document.getElementById('resumen-dia-grid').innerHTML = `
+          <div class="resumen-item">
+            <div class="valor valor-color" style="color:${colorPorTemperatura(r.temp_max_24h)}">${r.temp_max_24h?.toFixed(1) ?? '—'}°</div>
+            <div class="etiqueta">Máxima 24h${r.hora_max_24h ? ' · ' + r.hora_max_24h : ''}</div>
+          </div>
+          <div class="resumen-item">
+            <div class="valor valor-color" style="color:${colorPorTemperatura(r.temp_min_24h)}">${r.temp_min_24h?.toFixed(1) ?? '—'}°</div>
+            <div class="etiqueta">Mínima 24h${r.hora_min_24h ? ' · ' + r.hora_min_24h : ''}</div>
+          </div>
+          <div class="resumen-item">
+            <div class="valor">${r.prec_24h ?? '—'} mm</div>
+            <div class="etiqueta">Precipitación 24h</div>
+          </div>
+          <div class="resumen-item">
+            <div class="valor">${r.presion_nmar?.toFixed(0) ?? '—'} hPa</div>
+            <div class="etiqueta">Presión (nivel mar)</div>
+          </div>
+      `;
     } catch(e){
-      document.getElementById('resumen-grid').innerHTML = '<p>No se pudo cargar el resumen.</p>';
+      document.getElementById('ahora-grid').innerHTML = '<p>No se pudo cargar el resumen.</p>';
     }
   }
 

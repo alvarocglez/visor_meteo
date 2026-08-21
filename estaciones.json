@@ -1,30 +1,37 @@
 {
   "2422": {
     "nombre": "Valladolid",
-    "primer_anio": 1996
+    "primer_anio": 1996,
+    "municipio": "47186"
   },
   "2517A": {
     "nombre": "Fuente el Sol",
-    "primer_anio": 2011
+    "primer_anio": 2011,
+    "municipio": "47067"
   },
   "2503B": {
     "nombre": "Olmedo",
-    "primer_anio": 2009
+    "primer_anio": 2009,
+    "municipio": "47104"
   },
   "2507Y": {
     "nombre": "Rueda",
-    "primer_anio": 2006
+    "primer_anio": 2006,
+    "municipio": "47139"
   },
   "5612X": {
     "nombre": "Lora de Estepa",
-    "primer_anio": 2005
+    "primer_anio": 2005,
+    "municipio": "41054"
   },
   "1223P": {
     "nombre": "Lena, Ronzón",
-    "primer_anio": 2010
+    "primer_anio": 2010,
+    "municipio": "33033"
   },
   "2734D": {
     "nombre": "Astorga",
-    "primer_anio": 2010
+    "primer_anio": 2010,
+    "municipio": "24008"
   }
 }

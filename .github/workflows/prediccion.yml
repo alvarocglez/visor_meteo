@@ -1,0 +1,34 @@
+name: Actualizar predicción
+on:
+  schedule:
+    - cron: "10 1,7,13,19 * * *"   # 4 veces al día, poco después de que AEMET
+                                    # publica los modelos (00/06/12/18 UTC)
+  workflow_dispatch:
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Instalar dependencias
+        run: pip install requests python-dotenv
+      - name: Generar predicción
+        env:
+          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+        run: python generar_prediccion.py
+      - name: Guardar cambios en el repositorio
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add graficas/prediccion/*.json
+          git stash --include-untracked
+          git fetch origin main
+          git reset --hard origin/main
+          git stash pop
+          git add graficas/prediccion/*.json
+          git commit -m "Actualizar predicción" || echo "Sin cambios"
+          git push

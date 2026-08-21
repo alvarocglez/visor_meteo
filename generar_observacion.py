@@ -214,6 +214,51 @@ def direccion_texto(grados):
     return direcciones[idx]
 
 
+def _wind_chill(ta, vv_kmh):
+    """Sensación térmica por frío + viento (fórmula NWS/Environment Canada).
+    Solo válida y aplicable con ta <= 10°C y viento >= 4.8 km/h."""
+    return (
+        13.12 + 0.6215 * ta - 11.37 * vv_kmh ** 0.16
+        + 0.3965 * ta * vv_kmh ** 0.16
+    )
+
+
+def _heat_index(ta, hr):
+    """Sensación térmica por calor + humedad (fórmula de Rothfusz, NWS).
+    Trabaja internamente en Fahrenheit, que es como está definida
+    oficialmente, y devuelve el resultado convertido de nuevo a Celsius."""
+    t_f = ta * 9 / 5 + 32
+    hi_f = (
+        -42.379 + 2.04901523 * t_f + 10.14333127 * hr
+        - 0.22475541 * t_f * hr - 0.00683783 * t_f ** 2
+        - 0.05481717 * hr ** 2 + 0.00122874 * t_f ** 2 * hr
+        + 0.00085282 * t_f * hr ** 2 - 0.00000199 * t_f ** 2 * hr ** 2
+    )
+    return (hi_f - 32) * 5 / 9
+
+
+def calcular_sensacion_termica(ta, vv, hr):
+    """Devuelve la sensación térmica en °C según las fórmulas oficiales del
+    NWS, eligiendo la que corresponda a la situación:
+    - Frío + viento -> wind chill (ta <= 10°C, viento >= 4.8 km/h)
+    - Calor + humedad -> heat index (ta >= 27°C)
+    - En el resto de casos, o si faltan datos, la sensación es la propia
+      temperatura del aire.
+    """
+    if ta is None:
+        return None
+
+    vv_kmh = vv * 3.6 if vv is not None else None
+
+    if vv_kmh is not None and ta <= 10 and vv_kmh >= 4.8:
+        return round(_wind_chill(ta, vv_kmh), 1)
+
+    if hr is not None and ta >= 27:
+        return round(_heat_index(ta, hr), 1)
+
+    return round(ta, 1)
+
+
 def generar_resumen(idema, cache):
     fints_ordenados = sorted(cache.keys())
     if not fints_ordenados:
@@ -224,14 +269,29 @@ def generar_resumen(idema, cache):
     fecha_utc = datetime.strptime(ultimo_fint.split("+")[0], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc)
     fecha_local = fecha_utc.astimezone(ZoneInfo("Europe/Madrid"))
 
-    temperaturas = [f["ta"] for f in cache.values() if f.get("ta") is not None]
+    fints_con_temp = [(fint, f["ta"]) for fint, f in cache.items() if f.get("ta") is not None]
     precipitaciones = [f["prec"] for f in cache.values() if f.get("prec") is not None]
+
+    def _hora_local(fint):
+        fu = datetime.strptime(fint.split("+")[0], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc)
+        return fu.astimezone(ZoneInfo("Europe/Madrid")).strftime("%H:%M")
+
+    if fints_con_temp:
+        fint_max, temp_max = max(fints_con_temp, key=lambda x: x[1])
+        fint_min, temp_min = min(fints_con_temp, key=lambda x: x[1])
+    else:
+        fint_max = fint_min = temp_max = temp_min = None
 
     resumen = {
         "hora_actualizacion": fecha_local.strftime("%H:%M"),
         "temp_actual": ultima_fila.get("ta"),
-        "temp_max_24h": max(temperaturas) if temperaturas else None,
-        "temp_min_24h": min(temperaturas) if temperaturas else None,
+        "sensacion_termica": calcular_sensacion_termica(
+            ultima_fila.get("ta"), ultima_fila.get("vv"), ultima_fila.get("hr")
+        ),
+        "temp_max_24h": temp_max,
+        "hora_max_24h": _hora_local(fint_max) if fint_max else None,
+        "temp_min_24h": temp_min,
+        "hora_min_24h": _hora_local(fint_min) if fint_min else None,
         "prec_24h": round(sum(precipitaciones), 1) if precipitaciones else 0,
         "humedad_actual": ultima_fila.get("hr"),
         "viento_velocidad": ultima_fila.get("vv"),
