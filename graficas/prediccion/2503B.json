@@ -1,6 +1,6 @@
 {
-  "icono": "clear-day",
+  "icono": "clear-night",
   "descripcion": "Despejado",
-  "es_noche": false,
-  "actualizado": "2026-08-21 21:32"
+  "es_noche": true,
+  "actualizado": "2026-08-22 04:19"
 }
