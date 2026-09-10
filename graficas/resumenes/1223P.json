@@ -6,7 +6,7 @@
   "hora_max_24h": "15:00",
   "temp_min_24h": 10.5,
   "hora_min_24h": "02:00",
-  "prec_24h": 1.6,
+  "prec_24h": 1.0,
   "humedad_actual": 96.0,
   "viento_velocidad": 0.7,
   "viento_direccion": "S",
