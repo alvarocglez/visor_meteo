@@ -1,6 +1,6 @@
 {
-  "icono": "cloudy-2-day",
-  "descripcion": "Intervalos nubosos",
-  "es_noche": false,
-  "actualizado": "2026-09-19 18:22"
+  "icono": "clear-night",
+  "descripcion": "Despejado",
+  "es_noche": true,
+  "actualizado": "2026-09-19 23:25"
 }
