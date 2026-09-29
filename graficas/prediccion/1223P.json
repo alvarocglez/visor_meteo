@@ -1,6 +1,6 @@
 {
-  "icono": "rainy-1-night",
-  "descripcion": "Intervalos nubosos con lluvia escasa",
-  "es_noche": true,
-  "actualizado": "2026-09-29 08:50"
+  "icono": "rainy-2-day",
+  "descripcion": "Nuboso con lluvia escasa",
+  "es_noche": false,
+  "actualizado": "2026-09-29 16:02"
 }
