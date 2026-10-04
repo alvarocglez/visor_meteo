@@ -1,5 +1,5 @@
 {
-  "hora_actualizacion": "15:00",
+  "hora_actualizacion": "16:00",
   "temp_actual": 21.1,
   "sensacion_termica": 21.1,
   "temp_max_24h": 21.1,
@@ -7,8 +7,8 @@
   "temp_min_24h": 15.3,
   "hora_min_24h": "08:00",
   "prec_24h": 18.0,
-  "humedad_actual": 79.0,
-  "viento_velocidad": 1.4,
+  "humedad_actual": 81.0,
+  "viento_velocidad": 1.6,
   "viento_direccion": "N",
   "presion_nmar": null
 }
