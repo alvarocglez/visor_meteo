@@ -1,6 +1,6 @@
 {
-  "icono": "thunderstorms",
-  "descripcion": "Cubierto con tormenta",
-  "es_noche": false,
-  "actualizado": "2026-10-03 19:12"
+  "icono": "cloudy",
+  "descripcion": "Cubierto",
+  "es_noche": true,
+  "actualizado": "2026-10-04 08:45"
 }
