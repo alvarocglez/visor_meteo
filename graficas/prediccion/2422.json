@@ -1,6 +1,6 @@
 {
-  "icono": "cloudy-3-day",
+  "icono": "cloudy-3-night",
   "descripcion": "Muy nuboso",
-  "es_noche": false,
-  "actualizado": "2026-10-04 19:32"
+  "es_noche": true,
+  "actualizado": "2026-10-05 00:17"
 }
