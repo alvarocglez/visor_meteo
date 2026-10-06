@@ -1,6 +1,6 @@
 {
-  "icono": "thunderstorms",
-  "descripcion": "Muy nuboso con tormenta y lluvia escasa",
-  "es_noche": false,
-  "actualizado": "2026-10-06 09:28"
+  "icono": "cloudy",
+  "descripcion": "Bruma",
+  "es_noche": true,
+  "actualizado": "2026-10-06 20:55"
 }
