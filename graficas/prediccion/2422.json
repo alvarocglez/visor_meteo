@@ -1,6 +1,6 @@
 {
-  "icono": "clear-day",
-  "descripcion": "Despejado",
-  "es_noche": false,
-  "actualizado": "2026-10-08 09:20"
+  "icono": "cloudy-1-night",
+  "descripcion": "Nubes altas",
+  "es_noche": true,
+  "actualizado": "2026-10-08 21:14"
 }
