@@ -1,6 +1,6 @@
 {
-  "icono": "clear-night",
-  "descripcion": "Despejado",
-  "es_noche": true,
-  "actualizado": "2026-10-23 07:57"
+  "icono": "rainy-1-day",
+  "descripcion": "Intervalos nubosos con lluvia escasa",
+  "es_noche": false,
+  "actualizado": "2026-10-23 14:34"
 }
